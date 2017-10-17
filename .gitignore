@@ -22,3 +22,5 @@ begin
 *.clstr
 *.txt
 *.png
+*.fastq
+*#
