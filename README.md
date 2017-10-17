@@ -11,7 +11,7 @@ Launch Obitools
 Move to 02_raw_data and decompress    
 `for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done`
 
-Prepare the interpretation files
+### Prepare the interpretation files
 Note: This must be done for each sequencing lane separately       
 `awk -F'\t' '$1=="1" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=1" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib1_headless.txt`
 `awk -F'\t' '$1=="2" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=2" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib2_headless.txt`
@@ -20,12 +20,46 @@ Note: This must be done for each sequencing lane separately
 Then add header to each
 `for i in *headless* ; do cat header.txt $i > ${i%_headless.txt}.txt ; done`
 
-
+### Start workflow
 Recover full seq reads from F and R reads
-``
+`illuminapairedend --score-min=40 -r 02_raw_data/NGSLib1_S1_L001_R2_001.fastq 02_raw_data/NGSLib1_S1_L001_R1_001.fastq > ./03_merged/NGSLib1.fq`
 
+Only keep aligned sequences    
+`obigrep -p 'mode!="joined"' 03_merged/NGSLib1.fq > 03_merged/NGSLib1_ali.fq`    
 
+After running the grep above, you can check how many of your reads were retained using wc   
 
-obitaxonomy 
+### Separate Individuals
+Use the interpretation files described above to separate your individuals   
+`ngsfilter -t ./00_archive/interp_lib1.txt -u 04_samples/unidentified_lib1.fq 03_merged/NGSLib1_ali.fq > ./04_samples/NGSLib1_ali_assi.fq`    
+
+Compare assigned vs unassigned    
+`grep -cE '^@' 04_samples/NGSLib1_ali_assi.fq`    
+
+### Retain only unique reads
+`obiuniq -m sample ./04_samples/NGSLib1_ali_assi.fq > 04_samples/NGSLib1_ali_assi_uniq.fa`    
+
+Sum up the count value to make sure all reads are accounted for:    
+`grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
+
+Look at the distribution of counts   
+`grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | sort -nr | less`
+
+### Denoise (remove artefactual reads)    
+Take another look at the distribution    
+`obistat -c count 04_samples/NGSLib1_ali_assi_uniq_trim.fa | sort -nk1 | head -20`
+
+Remove any sequences with fewer than 10 reads, and with a 55 < length < 75
+`obigrep --lmin 55 --lmax 75 -p 'count>=10' 04_samples/NGSLib1_ali_assi_uniq_trim.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75.fa`    
+
+Can also test others by streaming into grep: 
+`obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/NGSLib1_ali_assi_uniq_trim.fa | grep -cE '^>' - `
+
+### Remove potential PCR/seq errors    
+First label tags as either H, I, or S   
+`obiclean -s merged_sample -r 0.05 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_clean.fa`
+
+And filter    
+`obigrep -a 'obiclean_status:s|h' 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_clean.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa`
 
 
