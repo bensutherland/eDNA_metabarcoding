@@ -13,14 +13,19 @@ Move to 02_raw_data and decompress
 
 ### Prepare the interpretation files
 Note: This must be done for each sequencing lane separately       
-`awk -F'\t' '$1=="1" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=1" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib1_headless.txt`
-`awk -F'\t' '$1=="2" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=2" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib2_headless.txt`
-`awk -F'\t' '$1=="3" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=3" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib3_headless.txt`
+
+
+This code helps with the multiple indexed libraries in the same file issue (e.g. SOG data)    
+`awk -F'\t' '$1=="1" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=1" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib1_headless.txt`    
+`awk -F'\t' '$1=="2" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=2" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib2_headless.txt`    
+`awk -F'\t' '$1=="3" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=3" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib3_headless.txt`    
 
 Then add header to each
 `for i in *headless* ; do cat header.txt $i > ${i%_headless.txt}.txt ; done`
 
-### Start workflow
+### Merge paired-end reads (PE only)   
+Only run this step if reads are paired end. If not, skip ahead to ngsfilter.   
+
 Recover full seq reads from F and R reads
 `illuminapairedend --score-min=40 -r 02_raw_data/NGSLib1_S1_L001_R2_001.fastq 02_raw_data/NGSLib1_S1_L001_R1_001.fastq > ./03_merged/NGSLib1.fq`
 
@@ -29,12 +34,13 @@ Only keep aligned sequences
 
 After running the grep above, you can check how many of your reads were retained using wc   
 
-### Separate Individuals
+### Separate Individuals (SE start)   
 Use the interpretation files described above to separate your individuals   
 `ngsfilter -t ./00_archive/interp_lib1.txt -u 04_samples/unidentified_lib1.fq 03_merged/NGSLib1_ali.fq > ./04_samples/NGSLib1_ali_assi.fq`    
 
 Compare assigned vs unassigned    
 `grep -cE '^@' 04_samples/NGSLib1_ali_assi.fq`    
+
 
 ### Retain only unique reads
 `obiuniq -m sample ./04_samples/NGSLib1_ali_assi.fq > 04_samples/NGSLib1_ali_assi_uniq.fa`    
@@ -67,5 +73,9 @@ Using obitools (not currently working)
 `ecotag -d ~/taxonomy_databases/wolf_tutorial/embl_r117 -R ~/taxonomy_databases/wolf_tutorial/db_v05_r117.fasta ./04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa > 05_annotated/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS_annot.fa`    
 
 Using standard BLAST
-something like this, but need nr/nt database (nr not sufficient?)    
-`blastn -query ~/Documents/03_eDNA/eDNA_metabarcoding/04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa -db nr -evalue 1e-3 -outfmt 6 -max_target_seqs 1 > test.txt`
+`blastn -query 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa -db ~/blastplus_databases/nt -evalue 1e-3 -outfmt 6 -max_target_seqs 1 > 05_annotated/cleanHS_blastn_results.txt`   
+
+
+### 
+
+
