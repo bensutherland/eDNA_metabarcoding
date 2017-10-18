@@ -62,4 +62,10 @@ First label tags as either H, I, or S
 And filter    
 `obigrep -a 'obiclean_status:s|h' 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_clean.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa`
 
+## Assign each sequence to a taxon
+Using obitools (not currently working)    
+`ecotag -d ~/taxonomy_databases/wolf_tutorial/embl_r117 -R ~/taxonomy_databases/wolf_tutorial/db_v05_r117.fasta ./04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa > 05_annotated/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS_annot.fa`    
 
+Using standard BLAST
+something like this, but need nr/nt database (nr not sufficient?)    
+`blastn -query ~/Documents/03_eDNA/eDNA_metabarcoding/04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa -db nr -evalue 1e-3 -outfmt 6 -max_target_seqs 1 > test.txt`
