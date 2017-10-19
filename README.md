@@ -68,14 +68,29 @@ First label tags as either H, I, or S
 And filter    
 `obigrep -a 'obiclean_status:s|h' 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_clean.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa`
 
+## Export data     
+in tabular format per individual    
+`obitab --output-seq 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa > 04_samples/NGSLib1_cleanHS.txt`   
+This txt file will be input into R below.    
+
 ## Assign each sequence to a taxon
-Using obitools (not currently working)    
-`ecotag -d ~/taxonomy_databases/wolf_tutorial/embl_r117 -R ~/taxonomy_databases/wolf_tutorial/db_v05_r117.fasta ./04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa > 05_annotated/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS_annot.fa`    
+Obitools not currently working    
+For MEGAN, output cannot be in outfmt format, but rather just standard output format   
 
-Using standard BLAST
-`blastn -query 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa -db ~/blastplus_databases/nt -evalue 1e-3 -outfmt 6 -max_target_seqs 1 > 05_annotated/cleanHS_blastn_results.txt`   
+Using standard blastn against the remote nt database   
+`blastn -db nt -query 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa -out 05_annotated/NGSLib1_cleanHS_hits.txt -remote -num_descriptions 10 -num_alignments 10`    
 
 
-### 
+### Annotate sequences with species   
+Launch MEGAN, import blast output and the fasta file used as the blast query  
+Use proper LCA settings (to be added)    
+Select level of taxonomy to view   
+File -> Export csv      
+
+
+### Connect read counts and annotations    
+This will use the R script, suggested currently to run interactively.   
+
+
 
 
