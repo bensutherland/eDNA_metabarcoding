@@ -1,4 +1,7 @@
 # Use this script to connect the read counts to the annotations
+#rm(list=ls())
+
+
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
 setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s/")
 
@@ -14,6 +17,8 @@ annot.file.name.order <- "NGS5_C3_16S_cleanHS_hits-1-ex_order.txt"
 annot.file.name.species <- "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt" 
 
 annot.file.name <- annot.file.name.class
+annot.file.name <- annot.file.name.species
+
 
 # Import data
 counts <- read.delim2(paste("04_samples/", count.file.name, sep = "")) 
@@ -54,7 +59,10 @@ for(col in 2:ncol(data.df)) {
   result <- aggregate(x = data.df[,col], by = list(data.df$taxon), FUN = sum, na.rm = T)
   
   # divide the sum for that species (2nd column) by the total to make proportional
-  result.prop <- (result[,2]/sample.tot)*100  
+  result.prop <- (result[,2]/sample.tot)*100 
+  
+  ### HERE WOULD BE PERFECT SPOT TO OUTPUT AGGREGATED COUNTS ###
+  
   result.list[[sample]] <- result.prop
 }
   
@@ -70,7 +78,7 @@ colnames(prop.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(res
 rownames(prop.df) <- result[,1] # a bit too hacky
 head(prop.df)
 
-write.csv(x = prop.df, file = "05_annotated/counts_on_taxa.csv")
+# write.csv(x = prop.df, file = "05_annotated/counts_on_taxa.csv")
 
 # Find total numbers of reads mapping
 colnames(data.df)
@@ -96,6 +104,9 @@ cols8 <- brewer.pal(n = 11, name = "Spectral")
 palette <- c(cols,cols2,cols3,cols4,cols5,cols6,cols7,cols8)
 length(palette)
 
+# Only for the species attempt (this is hacky and needs to be fixed, should be fine for now though)
+palette.numerous<- rep(x = palette, times = 20)
+
 
 ### Connect locations to plot ####
 locations <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
@@ -107,7 +118,7 @@ sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 # PLOT
 par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
-position.info <- barplot(as.matrix(prop.df), col = palette[1:nrow(prop.df)]
+position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
         , cex.names = 0.7
@@ -127,7 +138,7 @@ mtext(x = position.info, text = sample.reads
 
 
 # Create a legend index to only create legend for top presence
-color.index <- cbind(rownames(prop.df), palette[1:nrow(prop.df)])
+color.index <- cbind(rownames(prop.df), palette.numerous[1:nrow(prop.df)])
 colnames(color.index) <- c("taxon","color")
 head(color.index)
 color.index.df <- as.data.frame(color.index)
