@@ -70,6 +70,7 @@ colnames(prop.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(res
 rownames(prop.df) <- result[,1] # a bit too hacky
 head(prop.df)
 
+write.csv(x = prop.df, file = "05_annotated/counts_on_taxa.csv")
 
 # Find total numbers of reads mapping
 colnames(data.df)
@@ -111,7 +112,12 @@ position.info <- barplot(as.matrix(prop.df), col = palette[1:nrow(prop.df)]
         , las = 1
         , cex.names = 0.7
         , cex.axis = 0.7
-        , ylab = "Proportion (%)")
+        , ylab = "Proportion (%)"
+        , xaxt = "n")
+
+axis(side = 1, at = position.info, 
+     labels = sample.locations$locations, las = 3
+     , cex.axis = 0.7)
 
 # Add information about read counts per sample
 # text(x = position.info
