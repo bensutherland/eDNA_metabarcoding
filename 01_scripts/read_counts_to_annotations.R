@@ -25,10 +25,10 @@ counts <- read.delim2(paste("04_samples/", count.file.name, sep = ""))
 annot <- read.delim2(paste("05_annotated/", annot.file.name, sep = ""), header = F
                      , col.names = c("id","taxon"))
 
-# Current COI names
-counts <- read.delim2("04_samples/NGS_C3_cleanHS.txt")
-annot <- read.delim2("05_annotated/NGS_C3_COI_cleanHS_hits-ex_species.txt", header = F
-                     , col.names = c("id","taxon"))
+# # Current COI names
+# counts <- read.delim2("04_samples/NGS_C3_cleanHS.txt")
+# annot <- read.delim2("05_annotated/NGS_C3_COI_cleanHS_hits-ex_species.txt", header = F
+#                      , col.names = c("id","taxon"))
 
 
 head(counts)

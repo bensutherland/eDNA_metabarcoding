@@ -25,3 +25,4 @@ begin
 *.fastq
 *#
 *.rma6
+*.ods
