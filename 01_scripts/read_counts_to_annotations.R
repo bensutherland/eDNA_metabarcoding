@@ -108,8 +108,8 @@ cols2 <- brewer.pal(n = 8, name = "Set2")
 cols3 <- brewer.pal(n = 10, name = "Set3")
 cols4 <- brewer.pal(n = 8, name = "Pastel2")
 cols5 <- brewer.pal(n = 9, name = "Pastel1")
-cols6 <- brewer.pal(n = 10, name = "Paired")
-cols7 <- brewer.pal(n = 11, name = "BrBG")
+cols6 <- brewer.pal(n = 11, name = "BrBG")
+cols7 <- brewer.pal(n = 10, name = "Paired")
 cols8 <- brewer.pal(n = 11, name = "Spectral")
 cols9 <- brewer.pal(n = 9, name = "YlOrRd")
 cols10 <- brewer.pal(n = 9, name = "YlGnBu")
@@ -139,9 +139,8 @@ locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova"
 # Select locations based on datatype
 locations <- locations.list[[datatype]]
 
-# Create a sample locations dataframe
+# Make index for sample names and locations
 sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
-
 
 
 # PLOT
@@ -149,14 +148,14 @@ par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
 position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
-        , cex.names = 0.7
-        , cex.axis = 0.7
+        , cex.names = 0.9
+        , cex.axis = 0.9
         , ylab = "Proportion (%)"
         , xaxt = "n")
 
 axis(side = 1, at = position.info, 
      labels = sample.locations$locations, las = 3
-     , cex.axis = 0.7)
+     , cex.axis = 0.9)
 
 # Add information about read counts per sample
 # text(x = position.info
@@ -194,7 +193,8 @@ plot(1, type = "n", axes = F, xlab = "", ylab = "")
 
 # fix legend info to character text
 legend(x = "center", y = "center", legend = legend.info$taxon
-        , fill = as.character(legend.info$color), cex = 0.7
+        , fill = as.character(legend.info$color), cex = 1.2
         , ncol = 3)
 
 #
+# Save out as 10 x 8 in portrait
