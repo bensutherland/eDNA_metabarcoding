@@ -3,7 +3,8 @@
 
 
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
-setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s/")
+#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s")
+setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_COI")
 
 # Install Packages
 #install.packages("RColorBrewer")
@@ -143,6 +144,10 @@ locations <- locations.list[[datatype]]
 sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
+# Minor adjust needed for cex in legend for the 16s or COI
+legend.cex <- c(1.2, 0.9) ; names(legend.cex) <- c("C3_16s","C3_COI")
+
+
 # PLOT
 par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
 position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
@@ -193,7 +198,7 @@ plot(1, type = "n", axes = F, xlab = "", ylab = "")
 
 # fix legend info to character text
 legend(x = "center", y = "center", legend = legend.info$taxon
-        , fill = as.character(legend.info$color), cex = 1.2
+        , fill = as.character(legend.info$color), cex = legend.cex[datatype]
         , ncol = 3)
 
 #
