@@ -50,26 +50,31 @@ head(data.df)
 # Make data proportional data
 sample.tot <- NULL ; sample <- NULL
 result <- NULL
-result.prop <- NULL
+result.prop <- NULL ; result.count.list <- NULL
 result.list <- list()
+agg.counts.list <- list()
 
 for(col in 2:ncol(data.df)) {
-  sample <- names(data.df[col])
-  sample.tot <- sum(data.df[,col])
+  sample <- names(data.df[col]) # name of the sample this iteration
+  sample.tot <- sum(data.df[,col]) # total number reads in this sample
+  
+  # Add up all of the counts for this sample
   result <- aggregate(x = data.df[,col], by = list(data.df$taxon), FUN = sum, na.rm = T)
   
   # divide the sum for that species (2nd column) by the total to make proportional
   result.prop <- (result[,2]/sample.tot)*100 
   
-  ### HERE WOULD BE PERFECT SPOT TO OUTPUT AGGREGATED COUNTS ###
-  
+  # save out counts into a list
+  result.count.list[[sample]] <- result[,2]
+  # save out proportions into a list
   result.list[[sample]] <- result.prop
 }
   
 str(result.list)
-
+str(result.count.list)
 
 # Bring data out of list into a dataframe
+# for proportions
 prop.df <- NULL 
 for(i in 1:length(result.list)){ 
   prop.df <- cbind(prop.df, result.list[[i]])}
@@ -77,8 +82,18 @@ for(i in 1:length(result.list)){
 colnames(prop.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(result.list))
 rownames(prop.df) <- result[,1] # a bit too hacky
 head(prop.df)
+# write.csv(x = prop.df, file = "05_annotated/proportions_by_taxa.csv")
 
-# write.csv(x = prop.df, file = "05_annotated/counts_on_taxa.csv")
+# for counts
+counts.df <- NULL
+for(i in 1:length(result.count.list)){ 
+  counts.df <- cbind(counts.df, result.count.list[[i]])}
+
+colnames(counts.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(result.list))
+rownames(counts.df) <- result[,1] # a bit hacky
+head(counts.df)
+# write.csv(x = counts.df, file = "05_annotated/counts_by_taxa.csv")
+##TODO## MAKE THAT MORE ADAPTABLE BY USING PASTE
 
 # Find total numbers of reads mapping
 colnames(data.df)
