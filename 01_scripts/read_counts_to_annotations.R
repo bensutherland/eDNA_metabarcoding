@@ -9,27 +9,24 @@ setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s/")
 #install.packages("RColorBrewer")
 library("RColorBrewer")
 
+# Choose datatype
+datatype <- "C3_16s"
+#datatype <- "C3_COI"
 
-# Set files
-count.file.name <- "NGS5_C3_16S_cleanHS.txt"
-annot.file.name.class <- "NGS5_C3_16S_cleanHS_hits-1-ex_order.txt"
-annot.file.name.order <- "NGS5_C3_16S_cleanHS_hits-1-ex_order.txt"
-annot.file.name.species <- "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt" 
+## Set filenames for loading different datasets
+filenames.list <- list()
+filenames.list[["C3_16s"]] <- c("NGS5_C3_16S_cleanHS.txt", "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt")
+names(filenames.list[["C3_16s"]]) <- c("count", "annot")
+filenames.list[["C3_COI"]] <- c("NGS_C3_cleanHS.txt", "NGS_C3_COI_cleanHS_hits-ex_species.txt")
+names(filenames.list[["C3_COI"]]) <- c("count", "annot")
 
-annot.file.name <- annot.file.name.class
-annot.file.name <- annot.file.name.species
-
+filenames.list
 
 # Import data
-counts <- read.delim2(paste("04_samples/", count.file.name, sep = "")) 
-annot <- read.delim2(paste("05_annotated/", annot.file.name, sep = ""), header = F
+paste("You are analyzing ", datatype, sep = "")
+counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = "")) 
+annot <- read.delim2(paste("05_annotated/", filenames.list[[datatype]][2], sep = ""), header = F
                      , col.names = c("id","taxon"))
-
-# # Current COI names
-# counts <- read.delim2("04_samples/NGS_C3_cleanHS.txt")
-# annot <- read.delim2("05_annotated/NGS_C3_COI_cleanHS_hits-ex_species.txt", header = F
-#                      , col.names = c("id","taxon"))
-
 
 head(counts)
 head(annot)
@@ -50,7 +47,6 @@ str(data)
 ###### Quantification #####
 # subset only the required columns
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # more adaptive method
-#data.df <- as.data.frame(data[,c(2,4,5:10)])
 head(data.df)
 
 # Make data proportional data
