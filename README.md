@@ -54,7 +54,7 @@ Optional: look at the distribution of counts
 Optional: take another look at the distribution    
 `obistat -c count 04_samples/NGSLib1_ali_assi_uniq_trim.fa | sort -nk1 | head -20`
 
-Remove any sequences with fewer than 10 reads, and with a 55 < length < 75
+Remove any sequences with fewer than 10 reads, and with a 55 < length < 75     
 `obigrep --lmin 55 --lmax 75 -p 'count>=10' 04_samples/NGSLib1_ali_assi_uniq_trim.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75.fa`    
 
 For longer reads, use:   
