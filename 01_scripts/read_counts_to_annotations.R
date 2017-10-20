@@ -1,6 +1,6 @@
 # Use this script to connect the read counts to the annotations
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
-setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_Austin/")
+setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s/")
 
 # Install Packages
 #install.packages("RColorBrewer")
@@ -96,19 +96,28 @@ palette <- c(cols,cols2,cols3,cols4,cols5,cols6,cols7,cols8)
 length(palette)
 
 
+### Connect locations to plot ####
+locations <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
+               , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+               , "KutzeBC", "HaidaGwaiiBC", "ExtCont", "NTC")
+sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
+
+
 
 # PLOT
 par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
 position.info <- barplot(as.matrix(prop.df), col = palette[1:nrow(prop.df)]
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
-        , cex.names = 0.9
-        , cex.axis = 0.9
+        , cex.names = 0.7
+        , cex.axis = 0.7
         , ylab = "Proportion (%)")
 
 # Add information about read counts per sample
-text(x = position.info
-     , y = 100, labels = sample.reads, cex = 0.7)
+# text(x = position.info
+#      , y = 140, labels = sample.reads, cex = 0.7)
+mtext(x = position.info, text = sample.reads
+      , side=3, at = position.info, cex = 0.7)
 
 
 # Create a legend index to only create legend for top presence
