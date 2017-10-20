@@ -25,6 +25,12 @@ counts <- read.delim2(paste("04_samples/", count.file.name, sep = ""))
 annot <- read.delim2(paste("05_annotated/", annot.file.name, sep = ""), header = F
                      , col.names = c("id","taxon"))
 
+# Current COI names
+counts <- read.delim2("04_samples/NGS_C3_cleanHS.txt")
+annot <- read.delim2("05_annotated/NGS_C3_COI_cleanHS_hits-ex_species.txt", header = F
+                     , col.names = c("id","taxon"))
+
+
 head(counts)
 head(annot)
 
@@ -124,9 +130,18 @@ palette.numerous<- rep(x = palette, times = 20)
 
 
 ### Connect locations to plot ####
+# TODO (make below less hacky)
+# 16S
 locations <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
                , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                , "KutzeBC", "HaidaGwaiiBC", "ExtCont", "NTC")
+
+# COI
+locations <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
+               , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+               , "KutzeBC", "HaidaGwaiiBC", "ExtCont")
+
+
 sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
@@ -181,7 +196,7 @@ plot(1, type = "n", axes = F, xlab = "", ylab = "")
 
 # fix legend info to character text
 legend(x = "center", y = "center", legend = legend.info$taxon
-        , fill = as.character(legend.info$color), cex = 0.8
+        , fill = as.character(legend.info$color), cex = 0.7
         , ncol = 3)
 
 #
