@@ -50,11 +50,8 @@ data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # mor
 head(data.df)
 
 # Make data proportional data
-sample.tot <- NULL ; sample <- NULL
-result <- NULL
-result.prop <- NULL ; result.count.list <- NULL
-result.list <- list()
-agg.counts.list <- list()
+sample.tot <- NULL ; sample <- NULL; result <- NULL; result.prop <- NULL ; result.count.list <- NULL
+result.list <- list(); agg.counts.list <- list()
 
 for(col in 2:ncol(data.df)) {
   sample <- names(data.df[col]) # name of the sample this iteration
@@ -75,7 +72,7 @@ for(col in 2:ncol(data.df)) {
 str(result.list)
 str(result.count.list)
 
-# Bring data out of list into a dataframe
+#### Obtain relevant information into a dataframe from the list ####
 # for proportions
 prop.df <- NULL 
 for(i in 1:length(result.list)){ 
@@ -102,7 +99,7 @@ colnames(data.df)
 sample.reads <- colSums(x = data.df[, c(2:ncol(data.df))])
 
 
-##### PLOT ####
+##### Plot proportion data ####
 # see color options
 #display.brewer.all()
 
@@ -110,19 +107,28 @@ sample.reads <- colSums(x = data.df[, c(2:ncol(data.df))])
 #palette <- colorRampPalette(c("blue","red"))(nrow(prop.df))
 
 # option 2
-cols <- brewer.pal(n = 10, name = "Set1")
-cols2 <- brewer.pal(n = 10, name = "Set2")
+cols <- brewer.pal(n = 9, name = "Set1")
+cols2 <- brewer.pal(n = 8, name = "Set2")
 cols3 <- brewer.pal(n = 10, name = "Set3")
 cols4 <- brewer.pal(n = 8, name = "Pastel2")
 cols5 <- brewer.pal(n = 9, name = "Pastel1")
 cols6 <- brewer.pal(n = 10, name = "Paired")
 cols7 <- brewer.pal(n = 11, name = "BrBG")
 cols8 <- brewer.pal(n = 11, name = "Spectral")
-palette <- c(cols,cols2,cols3,cols4,cols5,cols6,cols7,cols8)
+cols9 <- brewer.pal(n = 9, name = "YlOrRd")
+cols10 <- brewer.pal(n = 9, name = "YlGnBu")
+cols11 <- brewer.pal(n = 9, name = "YlGn")
+cols12 <- brewer.pal(n = 9, name = "RdPu")
+cols13 <- brewer.pal(n = 9, name = "Purples")
+cols14 <- brewer.pal(n = 9, name = "PuRd")
+cols15 <- brewer.pal(n = 9, name = "Greys")
+cols16 <- brewer.pal(n = 11, name = "RdGy")
+
+palette <- c(cols,cols2,cols3,cols4,cols5,cols6,cols7,cols8,cols9,cols10,cols11,cols12,cols13,cols14,cols15,cols16)
 length(palette)
 
 # Only for the species attempt (this is hacky and needs to be fixed, should be fine for now though)
-palette.numerous<- rep(x = palette, times = 20)
+palette.numerous<- rep(x = palette, times = 4)
 
 
 ### Connect locations to plot ####
