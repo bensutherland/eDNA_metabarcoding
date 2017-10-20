@@ -100,13 +100,9 @@ sample.reads <- colSums(x = data.df[, c(2:ncol(data.df))])
 
 
 ##### Plot proportion data ####
+
 # see color options
 #display.brewer.all()
-
-# option 1
-#palette <- colorRampPalette(c("blue","red"))(nrow(prop.df))
-
-# option 2
 cols <- brewer.pal(n = 9, name = "Set1")
 cols2 <- brewer.pal(n = 8, name = "Set2")
 cols3 <- brewer.pal(n = 10, name = "Set3")
@@ -132,18 +128,18 @@ palette.numerous<- rep(x = palette, times = 4)
 
 
 ### Connect locations to plot ####
-# TODO (make below less hacky)
-# 16S
-locations <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
-               , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-               , "KutzeBC", "HaidaGwaiiBC", "ExtCont", "NTC")
+locations.list <- list()
+locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
+                                             , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+                                             , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
+locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
+                                , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+                                , "HaidaGwaiiBC", "KutzeBC",  "ExtCont")
 
-# COI
-locations <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
-               , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-               , "KutzeBC", "HaidaGwaiiBC", "ExtCont")
+# Select locations based on datatype
+locations <- locations.list[[datatype]]
 
-
+# Create a sample locations dataframe
 sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
