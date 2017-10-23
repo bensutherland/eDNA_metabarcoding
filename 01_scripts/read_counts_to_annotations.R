@@ -23,6 +23,7 @@ names(filenames.list[["C3_COI"]]) <- c("count", "annot")
 
 filenames.list
 
+
 # Import data
 paste("You are analyzing ", datatype, sep = "")
 counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = "")) 
@@ -50,6 +51,8 @@ str(data)
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # more adaptive method
 head(data.df)
 
+# Species remove (#TODO)
+
 # Make data proportional data
 sample.tot <- NULL ; sample <- NULL; result <- NULL; result.prop <- NULL ; result.count.list <- NULL
 result.list <- list(); agg.counts.list <- list()
@@ -58,10 +61,11 @@ for(col in 2:ncol(data.df)) {
   sample <- names(data.df[col]) # name of the sample this iteration
   sample.tot <- sum(data.df[,col]) # total number reads in this sample
   
-  # Add up all of the counts for this sample
+  # Add up all of the counts for this sample by taxon
   result <- aggregate(x = data.df[,col], by = list(data.df$taxon), FUN = sum, na.rm = T)
   
-  # divide the sum for that species (2nd column) by the total to make proportional
+  # divide the sum for that species (2nd column in 'result') 
+  # by the total reads for that sample to make proportional
   result.prop <- (result[,2]/sample.tot)*100 
   
   # save out counts into a list
@@ -124,16 +128,16 @@ cols16 <- brewer.pal(n = 11, name = "RdGy")
 palette <- c(cols,cols2,cols3,cols4,cols5,cols6,cols7,cols8,cols9,cols10,cols11,cols12,cols13,cols14,cols15,cols16)
 length(palette)
 
-# Only for the species attempt (this is hacky and needs to be fixed, should be fine for now though)
+# Here we repeat colors, because of so many species (repeats will probably not be viewed as only a subset will be shown in the legend in the end)
 palette.numerous<- rep(x = palette, times = 4)
 
 
 ### Connect locations to plot ####
 locations.list <- list()
-locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
+locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                                              , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                                              , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RamahNL","RigolNL"
+locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont")
 
