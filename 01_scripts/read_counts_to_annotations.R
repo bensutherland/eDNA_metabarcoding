@@ -4,7 +4,7 @@
 
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s")
-setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_COI")
+#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_COI")
 
 # Install Packages
 #install.packages("RColorBrewer")
@@ -51,7 +51,16 @@ str(data)
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # more adaptive method
 head(data.df)
 
-# Species remove (#TODO)
+# Species to remove (e.g. human contamination / presence)
+species.remove <- list()
+species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
+species.remove[["C3_COI"]] <- c("NA")
+
+# Select species to remove based on datatype
+species.remove <- species.remove[[datatype]]
+
+# Remove species from data.df
+data.df <- data.df[ ! data.df$taxon %in% species.remove, ]
 
 # Make data proportional data
 sample.tot <- NULL ; sample <- NULL; result <- NULL; result.prop <- NULL ; result.count.list <- NULL
@@ -105,7 +114,6 @@ sample.reads <- colSums(x = data.df[, c(2:ncol(data.df))])
 
 
 ##### Plot proportion data ####
-
 # see color options
 #display.brewer.all()
 cols <- brewer.pal(n = 9, name = "Set1")
@@ -149,11 +157,16 @@ sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
 # Minor adjust needed for cex in legend for the 16s or COI
-legend.cex <- c(1.2, 0.9) ; names(legend.cex) <- c("C3_16s","C3_COI")
+legend.cex <- c(0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI")
 
 
 # PLOT
 par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
+filename <- paste("", datatype, "proportion_by_loc.pdf", sep = "")
+
+# if want to work interactively, comment out the following line
+pdf(file = filename, width = 10, height = 8)
+
 position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
@@ -203,7 +216,9 @@ plot(1, type = "n", axes = F, xlab = "", ylab = "")
 # fix legend info to character text
 legend(x = "center", y = "center", legend = legend.info$taxon
         , fill = as.character(legend.info$color), cex = legend.cex[datatype]
-        , ncol = 3)
+        , ncol = 4)
 
+
+dev.off()
 #
 # Save out as 10 x 8 in portrait
