@@ -22,6 +22,10 @@ This code helps with the multiple indexed libraries in the same file issue (e.g.
 Then add header to each
 `for i in *headless* ; do cat header.txt $i > ${i%_headless.txt}.txt ; done`
 
+For SOG data, use the following:    
+`awk -F'\t' '{ print $1","$6","$7 }' sog_trawl_sample_data.txt | sed 's/\ 0\ /\ /g' > sog_trawl_sample_data_minimum.txt`   
+
+
 ### Merge paired-end reads (PE only)   
 Only run this step if reads are paired end. If not, skip ahead to ngsfilter.   
 
