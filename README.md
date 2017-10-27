@@ -97,6 +97,7 @@ Apply the following LCA settings:
 Select level of taxonomy to view, possibly use multiple different levels, e.g. species, genus, family       
 File -> Export csv      
 Choose: `readName_to_taxonName`    
+Save into the folder  `05_annotated`  
 
 ### Connect read counts and annotations    
 This will use the R script, suggested currently to run interactively.   

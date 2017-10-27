@@ -3,6 +3,7 @@
 
 
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
+#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_16S")
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s")
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_COI")
 
@@ -13,6 +14,7 @@ library("RColorBrewer")
 # Choose datatype
 datatype <- "C3_16s"
 #datatype <- "C3_COI"
+#datatype <- "SOG_16s"
 
 ## Set filenames for loading different datasets
 filenames.list <- list()
@@ -20,6 +22,10 @@ filenames.list[["C3_16s"]] <- c("NGS5_C3_16S_cleanHS.txt", "NGS5_C3_16S_cleanHS_
 names(filenames.list[["C3_16s"]]) <- c("count", "annot")
 filenames.list[["C3_COI"]] <- c("NGS_C3_cleanHS.txt", "NGS_C3_COI_cleanHS_hits-ex_species.txt")
 names(filenames.list[["C3_COI"]]) <- c("count", "annot")
+
+filenames.list[["SOG_16s"]] <- c("NGSLib4_cleanHS.txt", "NGSLib4_cleanHS_hits-ex_species.txt")
+names(filenames.list[["SOG_16s"]]) <- c("count", "annot")
+
 
 filenames.list
 
@@ -149,6 +155,9 @@ locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova"
                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont")
 
+locations.list[["SOG_16s"]] <- c(colnames(prop.df))
+
+
 # Select locations based on datatype
 locations <- locations.list[[datatype]]
 
@@ -157,16 +166,15 @@ sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
 # Minor adjust needed for cex in legend for the 16s or COI
-legend.cex <- c(0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI")
+legend.cex <- c(0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s")
 
 
 # PLOT
-par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
 filename <- paste("", datatype, "proportion_by_loc.pdf", sep = "")
 
 # if want to work interactively, comment out the following line
 pdf(file = filename, width = 10, height = 8)
-
+par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
 position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
