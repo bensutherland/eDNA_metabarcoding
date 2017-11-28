@@ -24,3 +24,5 @@ begin
 *.png
 *.fastq
 *#
+*.rma6
+*.ods
