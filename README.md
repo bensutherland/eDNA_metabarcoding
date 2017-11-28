@@ -1,9 +1,12 @@
 # eDNA_metabarcoding
 Dependencies:
-`python 2.7, gcc, python-dev packages`    
+`python 2.7`    
+`gcc`     
+`python-dev packages`        
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
 
-Add both the obitools binary and the /export/bin folder to the $PATH to make obitools accessible everywhere
+To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH      
+
 
 Launch Obitools    
 `obitools`    
@@ -13,29 +16,19 @@ Move to 02_raw_data and decompress
 
 ### Prepare the interpretation files
 Note: This must be done for each sequencing lane separately       
-
-This code helps with the multiple indexed libraries in the same file issue (e.g. SOG data)    
-`awk -F'\t' '$1=="1" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=1" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib1_headless.txt`    
-`awk -F'\t' '$1=="2" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=2" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib2_headless.txt`    
-`awk -F'\t' '$1=="3" { print "SOG", $2, $5, $6, $7, "F @ NGSlib=3" } ' OFS='\t' ./interp_file_2017-10-17.txt | sed 's/\ //g' > interp_lib3_headless.txt`    
-
-Then add header to each
-`for i in *headless* ; do cat header.txt $i > ${i%_headless.txt}.txt ; done`
-
-For SOG data, use the following:    
-`awk -F'\t' '{ print $1","$6","$7 }' sog_trawl_sample_data.txt | sed 's/\ 0\ /\ /g' > sog_trawl_sample_data_minimum.txt`   
-
+Use the file `00_archive/header.txt` as a template and create an interpretation file for your samples. An example interpretation is given in `00_archive/interp_example.txt`       
 
 ### Merge paired-end reads (PE only)   
-Only run this step if reads are paired end. If not, skip ahead to ngsfilter.   
+This step is for PE reads only, skip to ngsfilter if data is SE.    
 
-Recover full seq reads from F and R reads    
-`illuminapairedend --score-min=40 -r 02_raw_data/NGSLib1_S1_L001_R2_001.fastq 02_raw_data/NGSLib1_S1_L001_R1_001.fastq > ./03_merged/NGSLib1.fq`
+Use automated script to run illuminapairedend      
+`01_scripts/01_read_merging.sh` 
 
-Only keep aligned sequences    
-`obigrep -p 'mode!="joined"' 03_merged/NGSLib1.fq > 03_merged/NGSLib1_ali.fq`    
+Then only retain aligned sequences    
+`01_scripts/02_retain_aligned.sh`     
 
-After running the grep above, you can check how many of your reads were retained using wc   
+Detect how many reads remain after keeping only merged    
+`grep -cE '^\+$' 03_merged/*ali.fq`
 
 ### Separate Individuals (SE start)   
 Use the interpretation files described above to separate your individuals   
