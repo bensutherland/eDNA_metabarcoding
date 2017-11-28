@@ -28,7 +28,7 @@ Note: This must be done for each sequencing lane separately
 Use the file `00_archive/header.txt` as a template and create an interpretation file for your samples. An example interpretation is given in `00_archive/interp_example.txt`       
 
 ### Merge paired-end reads (PE only)   
-This step is for PE reads only, skip to ngsfilter if data is SE.    
+This step is for PE reads only, skip to [ngsfilter](#separate-individuals-se-start) if data is SE.    
 
 Use automated script to run illuminapairedend      
 `01_scripts/01_read_merging.sh` 
