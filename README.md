@@ -1,5 +1,8 @@
 # eDNA_metabarcoding
-Dependencies:
+Note: This repo is mainly for the developers purpose, although it is attempted to be robust to different data types, it comes with no guarantees of functionality or usefullness.    
+
+
+Dependencies:    
 `python 2.7`    
 `gcc`     
 `python-dev packages`        
@@ -11,8 +14,11 @@ To make obitools available everywhere, add the obitools binary and the obitools 
 Launch Obitools    
 `obitools`    
 
-Move to 02_raw_data and decompress    
-`for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done`
+Decompress fastq.gz files
+```
+cd 02_raw_data     
+for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done`
+```
 
 ### Prepare the interpretation files
 Note: This must be done for each sequencing lane separately       
