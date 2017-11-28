@@ -14,6 +14,9 @@ To make obitools available everywhere, add the obitools binary and the obitools 
 Launch Obitools    
 `obitools`    
 
+### Prepare raw data
+Copy raw data into `02_raw_data`    
+
 Decompress fastq.gz files
 ```
 cd 02_raw_data     
