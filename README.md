@@ -47,8 +47,8 @@ Detect how many reads remain after keeping only merged
 Use the interpretation files described above to separate your individuals   
 `ngsfilter -t ./00_archive/interp_lib1.txt -u 04_samples/unidentified_lib1.fq 03_merged/NGSLib1_ali.fq > ./04_samples/NGSLib1_ali_assi.fq`    
 
-**Optional**: compare assigned vs unassigned    
-`grep -cE '^@' 04_samples/NGSLib1_ali_assi.fq`    
+How many reads were assigned from your samples?   
+`for i in $(ls 04_samples/*assi.fq) ; do echo $i ; grep -cE '^\+$' $i ;  done`   
 
 
 ### Retain only unique reads
