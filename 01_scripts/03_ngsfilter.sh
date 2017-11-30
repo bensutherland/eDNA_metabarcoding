@@ -10,18 +10,18 @@ OUTPUT_FOLDER="04_samples"
 # Merging multiple files consecutively
 ls -1 $RAW_FOLDER/*.fastq | \
     # Remove path
-    awk -F/ '{ print $2 }' | \
+    awk -F"/" '{ print $2 }' | \
     
-    # Retain only first part of name
-    awk -F_ '{ print $1 }' | \
+    # Remove end of name   
+    perl -pe 's/R[12]\_001\.fastq//' | \
     sort -u | \
     
     # Run ngsfilter on each input file
     while read i
     do
         echo $i
-        INTERP="interp_"$i".txt"
-        ngsfilter -t $INTERP_FOLDER/$INTERP -u $OUTPUT_FOLDER/"unidentified_"$i".fq" $MERGED_FOLDER/$i"_ali.fq" > ./$OUTPUT_FOLDER/$i"_ali_assi.fq" 
+        INTERP=$i"interp.txt"
+        ngsfilter -t $INTERP_FOLDER/$INTERP -u $OUTPUT_FOLDER/$i"unidentified.fq" $MERGED_FOLDER/$i"ali.fq" > ./$OUTPUT_FOLDER/$i"ali_assi.fq" 
     done
 
 
