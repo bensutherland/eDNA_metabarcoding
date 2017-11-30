@@ -26,11 +26,12 @@ for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done`
 ### Prepare the interpretation files
 Note: This must be done for each sequencing lane separately       
 
-Importantly, name your interpretation files in the following convention:    
-If your raw data file is `NGSLib1_bunch_of_info.fastq`, name your interpretation file as `interp_NGSLib1.txt`. Note that the key piece is that the first part of the file name, preceding the underscore, is unique and will be used to pair the files together.
+Importantly, for automated matching of interpretation to fastq files, use the following naming convention:      
+Interpretation files should be named using all of the input fastq file name up to the `R1_001.fastq` or `R2_001.fastq` part, which is replaced by `interp.txt`    
+e.g. fastq files are: `Lib1_S1_L001_R1_001.fastq` and `Lib1_S1_L001_R2_001.fastq`     
+and then your interpretation file will be `Lib1_S1_L001_interp.txt`
 
 Use the file `00_archive/header.txt` as a template and create an interpretation file for your samples. An example interpretation is given in `00_archive/interp_example.txt`       
-
 ### Merge paired-end reads (PE only)   
 This step is for PE reads only, if data is SE, skip to [Separate Individuals](#separate-individuals-se-start).    
 
