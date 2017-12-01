@@ -7,6 +7,8 @@ Dependencies:
 `gcc`     
 `python-dev packages`        
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
+`MEGAN 6 (Community Edition)` ttps://ab.inf.uni-tuebingen.de/software/megan6     
+
 
 To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH      
 
@@ -45,15 +47,16 @@ Detect how many reads remain after keeping only merged
 `grep -cE '^\+$' 03_merged/*ali.fq`
 
 ### Separate Individuals (SE start)   
-Use the interpretation files described above to separate your individuals   
-`ngsfilter -t ./00_archive/interp_lib1.txt -u 04_samples/unidentified_lib1.fq 03_merged/NGSLib1_ali.fq > ./04_samples/NGSLib1_ali_assi.fq`    
+Use `ngsfilter`, and your interpretation files, to identify individuals in your aligned fastq. All unidentified samples will go into an unidentified.fq   
+`./01_scripts/03_ngsfilter.sh`    
 
-How many reads were assigned from your samples?   
+Count how many reads were assigned from your samples?   
 `for i in $(ls 04_samples/*assi.fq) ; do echo $i ; grep -cE '^\+$' $i ;  done`   
 
 
 ### Retain only unique reads
-`obiuniq -m sample ./04_samples/NGSLib1_ali_assi.fq > 04_samples/NGSLib1_ali_assi_uniq.fa`    
+Use obiuniq to retain unique reads within each sample.   
+`./01_scripts/04_retain_unique.sh`   
 
 Optional: sum up the count value to make sure all reads are accounted for:    
 `grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
@@ -61,42 +64,40 @@ Optional: sum up the count value to make sure all reads are accounted for:
 Optional: look at the distribution of counts   
 `grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | sort -nr | less`
 
-### Denoise (remove artefactual reads)    
 Optional: take another look at the distribution    
 `obistat -c count 04_samples/NGSLib1_ali_assi_uniq_trim.fa | sort -nk1 | head -20`
 
-Remove any sequences with fewer than 10 reads, and with a 55 < length < 75     
-`obigrep --lmin 55 --lmax 75 -p 'count>=10' 04_samples/NGSLib1_ali_assi_uniq_trim.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75.fa`    
+### Denoise (remove artefactual reads)    
+Use obigrep to only retain reads within a specified size range and minimum count.    
+Edit the following script to set the `LMIN`, `LMAX` and `MIN_READS` variables, then run it.  
+`./01_scripts/05_denoise.sh`    
 
-For longer reads, use:   
-`obigrep --lmin 100 --lmax 300 -p 'count>=10' 04_samples/NGSLib_uniq.fa > 04_samples/NGSLib_uniq_100-300_10.fa`    
-
+Personal suggested uses:   
+Valentini primers=55-75    
+Other longer amplicons=100-300      
 
 Optional: can also test other lengths by streaming into grep: 
-`obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/NGSLib1_ali_assi_uniq_trim.fa | grep -cE '^>' - `
+`obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/yourfile.fa | grep -cE '^>' - `
 
 ### Remove potential PCR/seq errors    
-Label tags as either H, I, or S   
-`obiclean -s merged_sample -r 0.05 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_clean.fa`
+Use obiclean to label tags as either Head (H), In-between (I), or Singletons (S). Using a 'r=0.05' value currently.    
+Then within the same script, filter the output to only keep the H or S reads.   
+`./01_scripts/06_remove_errors.sh`   
 
-Filter    
-`obigrep -a 'obiclean_status:s|h' 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_clean.fa > 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa`
+The output of this script will be used as an input to the BLAST query below.   
 
 ## Export data     
-in tabular format per individual    
-`obitab --output-seq 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa > 04_samples/NGSLib1_cleanHS.txt`   
-This txt file will be input into R below.    
+Use obitab to output a tab-delimited text file that will be used as an input to the R Script below.   
+`./01_scripts/07_obitab_export.sh`    
 
 ## Assign each sequence to a taxon
-Obitools approach for this is not currently working    
-For MEGAN, output cannot be in outfmt format, but rather just standard output format   
+Use a blastn to align the H and S fasta file against nt (NCBI remote).   
+`blastn -db nt -query 04_samples/your_cleaned_HS.fa -out 05_annotated/your_lib_output.txt -remote -num_descriptions 10 -num_alignments 10`    
 
-Using standard blastn against the remote nt database   
-`blastn -db nt -query 04_samples/NGSLib1_ali_assi_uniq_trim_c10_55-75_cleanHS.fa -out 05_annotated/NGSLib1_cleanHS_hits.txt -remote -num_descriptions 10 -num_alignments 10`    
-
+Note: for MEGAN, the blast output must be standard output format, not outfmt.  
 
 ### Annotate sequences with species   
-Launch MEGAN, import blast output and the fasta file used as the blast query  
+Launch MEGAN, import the blast output and the fasta file used as the blast query  
 Apply the following LCA settings:   
 `min score 100`    
 `max expected 0.00000001`   
