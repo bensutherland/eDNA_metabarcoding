@@ -16,8 +16,8 @@ ls -1 $RAW_FOLDER/*.fastq | \
     do
         echo $i
         illuminapairedend --score-min=40 \
-        -r $i"R1_001.fastq" \
-        $i"R2_001.fastq" > $i"merged.fq" 
+        -r $i"R2_001.fastq" \
+        $i"R1_001.fastq" > $i"merged.fq" 
     done
 
 # Move files to merged folder
