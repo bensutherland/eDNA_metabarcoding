@@ -10,7 +10,7 @@ LMAX=75 # upper size limit
 MIN_READS="10" # minimum count per sample 
 
 # Leave the following
-COUNT="'count>=$MINREADS'" 
+COUNT="'count>=$MIN_READS'" 
 
 # Run on all uniq.fa files 
 ls -1 $SAMPLE_FOLDER/*uniq.fa | \

@@ -136,4 +136,5 @@ Necessary inputs:
 Output from `MEGAN`, and output from `obitab`   
 
 
-
+### Extras
+`for i in $(grep -vE '^#' 00_archive/*_interp.txt | awk '{ print $2 }' - | uniq) ; do echo "sample_$i" ; grep -E "sample=$i;" 04_samples/NGSLib1_ali_assi.fq | wc -l ; done`
