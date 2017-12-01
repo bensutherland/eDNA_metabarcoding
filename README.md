@@ -39,9 +39,11 @@ This step is for PE reads only, if data is SE, skip to [Separate Individuals](#s
 
 Use automated script to run illuminapairedend      
 `01_scripts/01_read_merging.sh` 
+Essentially, `illuminapairedend --score-min=40 -r R2.fq R1.fq > output.fq`
 
 Then only retain aligned sequences    
 `01_scripts/02_retain_aligned.sh`     
+Essentially, `obigrep -p 'mode!="joined"' input.fq > output.fq`   
 
 Detect how many reads remain after keeping only merged    
 `grep -cE '^\+$' 03_merged/*ali.fq`
@@ -50,13 +52,24 @@ Detect how many reads remain after keeping only merged
 Use `ngsfilter`, and your interpretation files, to identify individuals in your aligned fastq. All unidentified samples will go into an unidentified.fq   
 `./01_scripts/03_ngsfilter.sh`    
 
-Count how many reads were assigned from your samples?   
+Essentially runs:  `ngsfilter -t your_interp.txt -u unidenfied.fq input.fq > output_ali_assi.fq`    
+
+Optional: count how many reads were assigned from your samples?   
 `for i in $(ls 04_samples/*assi.fq) ; do echo $i ; grep -cE '^\+$' $i ;  done`   
 
+
+NOTE: Depending on your preferences, this would be a good place to concatenate all of your output files together. To do this, run:    
+```
+mkdir 04_samples/sep_indiv
+mv 04_samples/*.fq 04_samples/sep_indiv
+cat 04_samples/sep_indiv/*_ali_assi.fq > 04_samples/all_files_ali_assi.fq
+```
 
 ### Retain only unique reads
 Use obiuniq to retain unique reads within each sample.   
 `./01_scripts/04_retain_unique.sh`   
+
+Essentially runs: `obiuniq -m sample input.fq > output_uniq.fa`    
 
 Optional: sum up the count value to make sure all reads are accounted for:    
 `grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
@@ -72,6 +85,8 @@ Use obigrep to only retain reads within a specified size range and minimum count
 Edit the following script to set the `LMIN`, `LMAX` and `MIN_READS` variables, then run it.  
 `./01_scripts/05_denoise.sh`    
 
+Essentially runs: `obigrep --lmin <min> --lmax <max> -p 'count>= <min.reads>' input.fa > output.fa`   
+
 Personal suggested uses:   
 Valentini primers=55-75    
 Other longer amplicons=100-300      
@@ -83,12 +98,16 @@ Optional: can also test other lengths by streaming into grep:
 Use obiclean to label tags as either Head (H), In-between (I), or Singletons (S). Using a 'r=0.05' value currently.    
 Then within the same script, filter the output to only keep the H or S reads.   
 `./01_scripts/06_remove_errors.sh`   
+Essentially runs: `obiclean -s merged sample -r 0.05 input.fa > output.fa`    
+then: `obigrep -a 'obiclean_status:s|h' input.fa > output.fa`    
 
 The output of this script will be used as an input to the BLAST query below.   
 
 ## Export data     
 Use obitab to output a tab-delimited text file that will be used as an input to the R Script below.   
 `./01_scripts/07_obitab_export.sh`    
+Essentially runs: `obitab --output-seq input.fa > output.txt`   
+
 
 ## Assign each sequence to a taxon
 Use a blastn to align the H and S fasta file against nt (NCBI remote).   
