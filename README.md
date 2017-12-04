@@ -65,6 +65,13 @@ mv 04_samples/*.fq 04_samples/sep_indiv
 cat 04_samples/sep_indiv/*_ali_assi.fq > 04_samples/all_files_ali_assi.fq
 ```
 
+Once you've combined all sample files into one, the following one-liner will give you a file with the number reads assigned per sample:   
+`for i in $(grep -vE '^#' 00_archive/*_interp.txt | awk '{ print $2 }' - | uniq) ; do echo "sample_$i" ; grep -E "sample=$i;" 04_samples/all_files_ali_assi.fq | wc -l ; done > ./04_samples/assigned_reads_per_sample.txt`    
+
+Then if you want to perform a few calculations (e.g. in excel, min, max, mean, sd): 
+`tr '\n' ',' < 04_samples/assigned_reads_per_sample.txt | sed 's/,sample/\nsample/g' - | grep -vE 'NTC|ExtCnt|Mock' - | awk -F"," '{ print $2 }' - > 04_samples/perform_calcs.txt`    
+
+
 ### Retain only unique reads
 Use obiuniq to retain unique reads within each sample.   
 `./01_scripts/04_retain_unique.sh`   
