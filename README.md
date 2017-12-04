@@ -49,6 +49,9 @@ Detect how many reads remain after keeping only merged
 `grep -cE '^\+$' 03_merged/*ali.fq`
 
 ### Separate Individuals (SE start)   
+If you are using single-end data, to match the PE initial steps, use the following script (for Mac just use cp, instead of cp -l):   
+`cp -l 02_raw_data/your_file_R1_001.fastq 03_merged/your_file_ali.fq`    
+
 Use `ngsfilter`, and your interpretation files, to identify individuals in your aligned fastq. All unidentified samples will go into an unidentified.fq   
 `./01_scripts/03_ngsfilter.sh`    
 
