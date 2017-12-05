@@ -9,9 +9,6 @@ LMIN=55 # lower size limit
 LMAX=75 # upper size limit
 MIN_READS="10" # minimum count per sample 
 
-# Leave the following
-COUNT="'count>=$MIN_READS'" 
-
 # Run on all uniq.fa files 
 ls -1 $SAMPLE_FOLDER/*uniq.fa | \
     perl -pe 's/\.fa//' | \
@@ -19,7 +16,7 @@ ls -1 $SAMPLE_FOLDER/*uniq.fa | \
     while read i
     do
         echo $i
-        obigrep --lmin $LMIN --lmax $LMAX -p $COUNT $i".fa" > "$i"_c"$MIN_READS"_"$LMIN"-"$LMAX".fa
+        obigrep --lmin $LMIN --lmax $LMAX -p 'count>='"$MIN_READS" $i".fa" > "$i"_c"$MIN_READS"_"$LMIN"-"$LMAX".fa
     done
 
 
