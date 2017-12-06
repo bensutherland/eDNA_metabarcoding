@@ -7,7 +7,7 @@ Dependencies:
 `gcc`     
 `python-dev packages`        
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
-`MEGAN 6 (Community Edition)` ttps://ab.inf.uni-tuebingen.de/software/megan6     
+`MEGAN 6 (Community Edition)` https://ab.inf.uni-tuebingen.de/software/megan6     
 
 
 To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH      
@@ -22,10 +22,10 @@ Copy raw data into `02_raw_data`
 Decompress fastq.gz files
 ```
 cd 02_raw_data     
-for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done`
+for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done
 ```
 
-### Prepare the interpretation files
+### 00. Prepare the interpretation files
 Note: This must be done for each sequencing lane separately       
 
 Importantly, for automated matching of interpretation to fastq files, use the following naming convention:      
@@ -34,7 +34,7 @@ e.g. fastq files are: `Lib1_S1_L001_R1_001.fastq` and `Lib1_S1_L001_R2_001.fastq
 and then your interpretation file will be `Lib1_S1_L001_interp.txt`
 
 Use the file `00_archive/header.txt` as a template and create an interpretation file for your samples. An example interpretation is given in `00_archive/interp_example.txt`       
-### Merge paired-end reads (PE only)   
+### 01. Merge paired-end reads (PE only)   
 This step is for PE reads only, if data is SE, skip to [Separate Individuals](#separate-individuals-se-start).    
 
 Use automated script to run illuminapairedend      
@@ -48,7 +48,7 @@ Essentially, `obigrep -p 'mode!="joined"' input.fq > output.fq`
 Detect how many reads remain after keeping only merged    
 `grep -cE '^\+$' 03_merged/*ali.fq`
 
-### Separate Individuals (SE start)   
+### 02. Separate Individuals (SE start)   
 If you are using single-end data, to match the PE initial steps, use the following script (for Mac just use cp, instead of cp -l):   
 `cp -l 02_raw_data/your_file_R1_001.fastq 03_merged/your_file_ali.fq`    
 
@@ -75,7 +75,7 @@ Then if you want to perform a few calculations (e.g. in excel, min, max, mean, s
 `tr '\n' ',' < 04_samples/assigned_reads_per_sample.txt | sed 's/,sample/\nsample/g' - | grep -vE 'NTC|ExtCnt|Mock' - | awk -F"," '{ print $2 }' - > 04_samples/perform_calcs.txt`    
 
 
-### Retain only unique reads
+### 03. Retain only unique reads
 Use obiuniq to retain unique reads within each sample.   
 `./01_scripts/04_retain_unique.sh`   
 
@@ -90,7 +90,7 @@ Optional: look at the distribution of counts
 Optional: take another look at the distribution    
 `obistat -c count 04_samples/NGSLib1_ali_assi_uniq_trim.fa | sort -nk1 | head -20`
 
-### Denoise (remove artefactual reads)    
+### 04. Denoise (remove artefactual reads)    
 Use obigrep to only retain reads within a specified size range and minimum count.    
 Edit the following script to set the `LMIN`, `LMAX` and `MIN_READS` variables, then run it.  
 `./01_scripts/05_denoise.sh`    
@@ -104,7 +104,7 @@ Other longer amplicons=100-300
 Optional: can also test other lengths by streaming into grep: 
 `obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/yourfile.fa | grep -cE '^>' - `
 
-### Remove potential PCR/seq errors    
+Remove potential PCR/seq errors    
 Use obiclean to label tags as either Head (H), In-between (I), or Singletons (S). Using a 'r=0.05' value currently.    
 Then within the same script, filter the output to only keep the H or S reads.   
 `./01_scripts/06_remove_errors.sh`   
@@ -113,7 +113,7 @@ then: `obigrep -a 'obiclean_status:s|h' input.fa > output.fa`
 
 The output of this script will be used as an input to the BLAST query below.   
 
-## Export data     
+## 05. Export data     
 Use obitab to output a tab-delimited text file that will be used as an input to the R Script below.   
 `./01_scripts/07_obitab_export.sh`    
 Essentially runs: `obitab --output-seq input.fa > output.txt`   
