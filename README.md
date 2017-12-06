@@ -89,6 +89,7 @@ Use obiuniq to keep one record per unique amplicon in the fastq (outputs fasta).
 `./01_scripts/03_retain_unique.sh`   
 
 Essentially: `obiuniq -m sample input.fq > output_uniq.fa`    
+One can also add other -m flags, such as `run`, or `pcr_rep`, etc., anything that you may want to summarize over using obitab later.    
 
 Optional: sum up the count value to make sure all reads are accounted for:    
 `grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
