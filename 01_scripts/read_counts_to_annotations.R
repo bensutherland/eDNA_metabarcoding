@@ -1,114 +1,163 @@
-# Use this script to connect the read counts to the annotations
+# Connect read counts to the annotations and plot
+# Uses as input the output of obitab with read counts per location and the output of MEGAN with taxonomy ID
+
 #rm(list=ls())
 
-
+# Set working directory depending on the dataset
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_16S")
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s")
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_COI")
+#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s_one_ended") # only req one end to assign
+setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_val")
 
 # Install Packages
 #install.packages("RColorBrewer")
 library("RColorBrewer")
 
-# Choose datatype
-datatype <- "C3_16s"
+# Choose dataset
+#datatype <- "C3_16s"
 #datatype <- "C3_COI"
 #datatype <- "SOG_16s"
+datatype <- "C3_val"
 
-## Set filenames for loading different datasets
+## Create a filenames list that contains file names for each dataset
 filenames.list <- list()
 filenames.list[["C3_16s"]] <- c("NGS5_C3_16S_cleanHS.txt", "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt")
 names(filenames.list[["C3_16s"]]) <- c("count", "annot")
 filenames.list[["C3_COI"]] <- c("NGS_C3_cleanHS.txt", "NGS_C3_COI_cleanHS_hits-ex_species.txt")
 names(filenames.list[["C3_COI"]]) <- c("count", "annot")
-
 filenames.list[["SOG_16s"]] <- c("NGSLib4_cleanHS.txt", "NGSLib4_cleanHS_hits-ex_species.txt")
 names(filenames.list[["SOG_16s"]]) <- c("count", "annot")
-
+filenames.list[["C3_val"]] <- c("NGSLib6_S1_L001_ali_assi_uniq_c10_55-75_clean_HS.txt"
+                                , "NGSLib6_S1_L001_ali_assi_uniq_c10_55-75clean_HS_annot-ex_sp.txt")
+names(filenames.list[["C3_val"]]) <- c("count", "annot")
 
 filenames.list
 
 
-# Import data
+#### 1. Import input data and merge #####
 paste("You are analyzing ", datatype, sep = "")
 counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = "")) 
 annot <- read.delim2(paste("05_annotated/", filenames.list[[datatype]][2], sep = ""), header = F
                      , col.names = c("id","taxon"))
-
 head(counts)
 head(annot)
-
 names(counts)
 names(annot)
 
-# sort
+# Sort data
 counts.sorted <- counts[order(counts$id),]
 annot.sorted <- annot[order(annot$id),]
 
-# merge
+# Merge
 data <- merge(x = annot.sorted, y = counts.sorted, by = "id")
 names(data)
 str(data)
 
-
-###### Quantification #####
-# subset only the required columns
-data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # more adaptive method
+# Keep only required columns
+data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # keeps 'sample.' or 'taxon'
 head(data.df)
 
-# Species to remove (e.g. human contamination / presence)
+# View species that are present in dataset
+unique(data.df$taxon)
+
+# Set species to remove (e.g. humans)
 species.remove <- list()
 species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
 species.remove[["C3_COI"]] <- c("NA")
-
-# Select species to remove based on datatype
-species.remove <- species.remove[[datatype]]
+species.remove[["C3_val"]] <- c("Homo sapiens")
+species.remove <- species.remove[[datatype]] # Use datatype for removing species
 
 # Remove species from data.df
+dim(data.df)
 data.df <- data.df[ ! data.df$taxon %in% species.remove, ]
+dim(data.df) # see how the number of taxa is reduced
 
-# Make data proportional data
-sample.tot <- NULL ; sample <- NULL; result <- NULL; result.prop <- NULL ; result.count.list <- NULL
-result.list <- list(); agg.counts.list <- list()
 
+#### 1.5 Set location information ####
+locations.C3 <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
+                   , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+                   , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
+
+# locations.list <- list()
+# locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
+#                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+#                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
+# locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
+#                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+#                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont")
+# 
+# locations.list[["SOG_16s"]] <- c(colnames(prop.df))
+# locations.list[["C3_val"]] <- c(colnames(prop.df))
+# 
+# # I think this is correct, need to double-check
+# locations.list[["C3_val"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
+#                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+#                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
+
+
+# # Select locations based on datatype
+# locations <- locations.list[[datatype]]
+
+# # Make index for sample names and locations
+# sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
+
+
+#### 2. Get proportional and count data by taxon per site ####
+# Set nulls
+sample.tot <- NULL ; sample <- NULL; result <- NULL; result.prop <- NULL ; count.list <- NULL
+prop.list <- list(); agg.counts.list <- list()
+
+# Loop to get count by species by site (count.list) and proportion of species by site (prop.list)
 for(col in 2:ncol(data.df)) {
-  sample <- names(data.df[col]) # name of the sample this iteration
-  sample.tot <- sum(data.df[,col]) # total number reads in this sample
   
-  # Add up all of the counts for this sample by taxon
+  # name of the sample this iteration
+  sample <- names(data.df[col]) 
+  # total number reads in this sample
+  sample.tot <- sum(data.df[,col])
+  
+  # Per sample, aggregate counts by taxon
   result <- aggregate(x = data.df[,col], by = list(data.df$taxon), FUN = sum, na.rm = T)
   
-  # divide the sum for that species (2nd column in 'result') 
-  # by the total reads for that sample to make proportional
+  # Make result proportional by dividing by the amount for that species (2nd column in 'result') 
   result.prop <- (result[,2]/sample.tot)*100 
   
-  # save out counts into a list
-  result.count.list[[sample]] <- result[,2]
-  # save out proportions into a list
-  result.list[[sample]] <- result.prop
+  # Save count values into a list
+  count.list[[sample]] <- result[,2]
+  
+  # Save proportions into a list
+  prop.list[[sample]] <- result.prop
 }
   
-str(result.list)
-str(result.count.list)
+str(prop.list)
+str(count.list)
 
-#### Obtain relevant information into a dataframe from the list ####
-# for proportions
+#### 3. Pull out relevant information from proportional and count data #####
+# Proportion data
 prop.df <- NULL 
-for(i in 1:length(result.list)){ 
-  prop.df <- cbind(prop.df, result.list[[i]])}
 
-colnames(prop.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(result.list))
+for(i in 1:length(prop.list)){ 
+  prop.df <- cbind(prop.df, prop.list[[i]])}
+
+head(prop.df)
+
+# Incorporate names
+site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
+colnames(prop.df) <- site.names
+
+
+colnames(prop.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(prop.list))
 rownames(prop.df) <- result[,1] # a bit too hacky
 head(prop.df)
 # write.csv(x = prop.df, file = "05_annotated/proportions_by_taxa.csv")
 
 # for counts
 counts.df <- NULL
-for(i in 1:length(result.count.list)){ 
-  counts.df <- cbind(counts.df, result.count.list[[i]])}
+for(i in 1:length(count.list)){ 
+  counts.df <- cbind(counts.df, count.list[[i]])}
 
-colnames(counts.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(result.list))
+colnames(counts.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(prop.list))
 rownames(counts.df) <- result[,1] # a bit hacky
 head(counts.df)
 # write.csv(x = counts.df, file = "05_annotated/counts_by_taxa.csv")
@@ -146,27 +195,11 @@ length(palette)
 palette.numerous<- rep(x = palette, times = 4)
 
 
-### Connect locations to plot ####
-locations.list <- list()
-locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-                                             , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-                                             , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-                                , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-                                , "HaidaGwaiiBC", "KutzeBC",  "ExtCont")
 
-locations.list[["SOG_16s"]] <- c(colnames(prop.df))
-
-
-# Select locations based on datatype
-locations <- locations.list[[datatype]]
-
-# Make index for sample names and locations
-sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
 # Minor adjust needed for cex in legend for the 16s or COI
-legend.cex <- c(0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s")
+legend.cex <- c(0.8, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val")
 
 
 # PLOT
@@ -174,7 +207,7 @@ filename <- paste("", datatype, "proportion_by_loc.pdf", sep = "")
 
 # if want to work interactively, comment out the following line
 pdf(file = filename, width = 10, height = 8)
-par(mfrow=c(2,1), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
+par(mfrow=c(2,1), mar= c(4,2.5,3,1) + 0.2, mgp = c(2,0.75,0))
 position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
