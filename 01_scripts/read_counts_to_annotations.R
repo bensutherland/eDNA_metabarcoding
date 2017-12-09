@@ -142,35 +142,31 @@ for(i in 1:length(prop.list)){
 
 head(prop.df)
 
-# Incorporate names
-site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
-colnames(prop.df) <- site.names
-
-
-colnames(prop.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(prop.list))
-rownames(prop.df) <- result[,1] # a bit too hacky
-head(prop.df)
-# write.csv(x = prop.df, file = "05_annotated/proportions_by_taxa.csv")
-
-# for counts
+# Count data
 counts.df <- NULL
+
 for(i in 1:length(count.list)){ 
   counts.df <- cbind(counts.df, count.list[[i]])}
 
-colnames(counts.df) <- gsub(pattern = "sample.", replacement = "S_", x = names(prop.list))
-rownames(counts.df) <- result[,1] # a bit hacky
 head(counts.df)
+
+# Incorporate names
+site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
+colnames(prop.df) <- site.names
+colnames(counts.df) <- site.names
+head(prop.df)
+head(counts.df)
+# write.csv(x = prop.df, file = "05_annotated/proportions_by_taxa.csv")
 # write.csv(x = counts.df, file = "05_annotated/counts_by_taxa.csv")
-##TODO## MAKE THAT MORE ADAPTABLE BY USING PASTE
 
 # Find total numbers of reads mapping
-colnames(data.df)
-sample.reads <- colSums(x = data.df[, c(2:ncol(data.df))])
+colnames(counts.df)
+sample.reads <- colSums(x = counts.df[, c(2:ncol(counts.df))])
 
 
-##### Plot proportion data ####
-# see color options
-#display.brewer.all()
+##### 4. Prepare plotting ####
+# Prepare palette
+#display.brewer.all() # see color options
 cols <- brewer.pal(n = 9, name = "Set1")
 cols2 <- brewer.pal(n = 8, name = "Set2")
 cols3 <- brewer.pal(n = 10, name = "Set3")
@@ -191,24 +187,29 @@ cols16 <- brewer.pal(n = 11, name = "RdGy")
 palette <- c(cols,cols2,cols3,cols4,cols5,cols6,cols7,cols8,cols9,cols10,cols11,cols12,cols13,cols14,cols15,cols16)
 length(palette)
 
-# Here we repeat colors, because of so many species (repeats will probably not be viewed as only a subset will be shown in the legend in the end)
+# Randomly select from palette
+set.seed(123)
+index <- sample(1:nrow(counts.df))
+index
+
+this.palette <- palette[index]
+
+# In case need numerous sets
 palette.numerous<- rep(x = palette, times = 4)
 
-
-
-
-
-# Minor adjust needed for cex in legend for the 16s or COI
+#Prepare legend size 
 legend.cex <- c(0.8, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val")
 
 
-# PLOT
-filename <- paste("", datatype, "proportion_by_loc.pdf", sep = "")
+#### 5. Plot proportion data ####
+filename <- paste("06_output_figures/", datatype, "_proportion_by_loc.pdf", sep = "")
 
 # if want to work interactively, comment out the following line
 pdf(file = filename, width = 10, height = 8)
 par(mfrow=c(2,1), mar= c(4,2.5,3,1) + 0.2, mgp = c(2,0.75,0))
-position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.df)]
+
+# Barplot proportion data
+position.info <- barplot(as.matrix(prop.df), col = this.palette
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
         , cex.names = 0.9
@@ -217,30 +218,28 @@ position.info <- barplot(as.matrix(prop.df), col = palette.numerous[1:nrow(prop.
         , xaxt = "n")
 
 axis(side = 1, at = position.info, 
-     labels = sample.locations$locations, las = 3
+     labels = site.names, las = 3
      , cex.axis = 0.9)
 
 # Add information about read counts per sample
-# text(x = position.info
-#      , y = 140, labels = sample.reads, cex = 0.7)
 mtext(x = position.info, text = sample.reads
       , side=3, at = position.info, cex = 0.7)
 
 
-# Create a legend index to only create legend for top presence
-color.index <- cbind(rownames(prop.df), palette.numerous[1:nrow(prop.df)])
+## Create Legend
+# Create dataframe with the taxon and the color
+color.index <- cbind(rownames(prop.df), this.palette)
 colnames(color.index) <- c("taxon","color")
 head(color.index)
 color.index.df <- as.data.frame(color.index)
 # note this will not work until you move the color codes to character
 
-# make a legend with only those with greater than 5% contained
-head(prop.df)
-
 # Identify which taxa are high proportion in any one sample
 min.proport <- 5
 
+# Set null
 high.presence.taxa <- NULL
+
 for(i in 1:nrow(prop.df)){
   high.presence.taxa.add <- if(max(prop.df[i,]) > min.proport) { print(rownames(prop.df)[i])}
   high.presence.taxa <- c(high.presence.taxa, high.presence.taxa.add)
@@ -248,6 +247,7 @@ for(i in 1:nrow(prop.df)){
 
 high.presence.taxa
 
+# Select the rows of the color index for only those high.presence taxa
 legend.info <- color.index.df[color.index.df$taxon %in% high.presence.taxa, ]
 
 
@@ -263,3 +263,15 @@ legend(x = "center", y = "center", legend = legend.info$taxon
 dev.off()
 #
 # Save out as 10 x 8 in portrait
+
+
+#### Plot count data ####
+pdf(file = "06_output_figures/C3_val_counts_by_loc.pdf", width = 10, height = 8)
+par(mfrow=c(1,1), mar= c(11,4,3,1) + 0.2, mgp = c(2,0.75,0))
+barplot(as.matrix(counts.df), col = this.palette, las = 2, xaxt = "n")
+
+axis(side = 1, at = position.info, labels = sample.locations$locations, las = 3, cex.axis = 0.9)
+
+legend("topright", legend = legend.info$taxon, fill = as.character(legend.info$color), cex  = 0.8)
+dev.off()
+
