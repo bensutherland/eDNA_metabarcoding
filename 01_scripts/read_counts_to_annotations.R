@@ -90,8 +90,8 @@ locations.C3 <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","Ra
                    , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
 locations.SOG <- colnames(data.df)[2:length(colnames(data.df))]
 
-locations <- locations.SOG
-#locations <- locations.C3
+sample.locations <- locations.SOG
+#sample.locations <- locations.C3
 
 # locations.list <- list()
 # locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
@@ -185,7 +185,7 @@ prop.output.csv.filename <- paste("05_annotated/", datatype, "_prop_by_taxa.csv"
 
 # Find total numbers of reads mapping
 colnames(counts.df)
-sample.reads <- colSums(x = counts.df[, c(2:ncol(counts.df))])
+sample.reads <- colSums(x = counts.df[, c(1:ncol(counts.df))])
 
 
 ##### 4. Prepare plotting ####
@@ -294,7 +294,7 @@ pdf(file = "06_output_figures/C3_val_counts_by_loc.pdf", width = 10, height = 8)
 par(mfrow=c(1,1), mar= c(11,4,3,1) + 0.2, mgp = c(2,0.75,0))
 barplot(as.matrix(counts.df), col = this.palette, las = 2, xaxt = "n")
 
-axis(side = 1, at = position.info, labels = sample.locations$locations, las = 3, cex.axis = 0.9)
+axis(side = 1, at = position.info, labels = sample.locations, las = 3, cex.axis = 0.9)
 
 legend("topright", legend = legend.info$taxon, fill = as.character(legend.info$color), cex  = 0.8)
 dev.off()
