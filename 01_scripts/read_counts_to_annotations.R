@@ -130,6 +130,11 @@ for(col in 2:ncol(data.df)) {
   # total number reads in this sample
   sample.tot <- sum(data.df[,col])
   
+  # Add 0.0001 to avoid 0 value if sample.tot is 0 (e.g. for controls)
+  if(sample.tot==0){
+    sample.tot <- 0.00001
+  }
+  
   # Per sample, aggregate counts by taxon
   result <- aggregate(x = data.df[,col], by = list(data.df$taxon), FUN = sum, na.rm = T)
   
@@ -217,7 +222,7 @@ this.palette <- palette[index]
 palette.numerous<- rep(x = palette, times = 4)
 
 #Prepare legend size 
-legend.cex <- c(0.8, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val")
+legend.cex <- c(0.8, 0.8, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
 
 
 #### 5. Plot proportion data ####
