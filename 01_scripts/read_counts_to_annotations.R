@@ -19,9 +19,10 @@ library("RColorBrewer")
 #datatype <- "C3_16s"
 #datatype <- "C3_COI"
 #datatype <- "SOG_16s"
-datatype <- "C3_val"
+#datatype <- "C3_val"
+datatype <- "SOG_val"
 
-## Create a filenames list that contains file names for each dataset
+## Create a filenames list that contains file names for each dataset (1st obitab output; 2nd MEGAN output)
 filenames.list <- list()
 filenames.list[["C3_16s"]] <- c("NGS5_C3_16S_cleanHS.txt", "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt")
 names(filenames.list[["C3_16s"]]) <- c("count", "annot")
@@ -32,6 +33,9 @@ names(filenames.list[["SOG_16s"]]) <- c("count", "annot")
 filenames.list[["C3_val"]] <- c("NGSLib6_S1_L001_ali_assi_uniq_c10_55-75_clean_HS.txt"
                                 , "NGSLib6_S1_L001_ali_assi_uniq_c10_55-75clean_HS_annot-ex_sp.txt")
 names(filenames.list[["C3_val"]]) <- c("count", "annot")
+filenames.list[["SOG_val"]] <- c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
+names(filenames.list[["SOG_val"]]) <- c("count", "annot")
+
 
 filenames.list
 
@@ -67,7 +71,9 @@ species.remove <- list()
 species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
 species.remove[["C3_COI"]] <- c("NA")
 species.remove[["C3_val"]] <- c("Homo sapiens")
+species.remove[["SOG_val"]] <- c("Homo sapiens")
 species.remove <- species.remove[[datatype]] # Use datatype for removing species
+species.remove
 
 # Remove species from data.df
 dim(data.df)
@@ -76,9 +82,16 @@ dim(data.df) # see how the number of taxa is reduced
 
 
 #### 1.5 Set location information ####
+####### TODO ###### 
+# FIX THIS TO AUTOMATE
+
 locations.C3 <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                    , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                    , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
+locations.SOG <- colnames(data.df)[2:length(colnames(data.df))]
+
+locations <- locations.SOG
+#locations <- locations.C3
 
 # locations.list <- list()
 # locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
@@ -151,7 +164,9 @@ for(i in 1:length(count.list)){
 head(counts.df)
 
 # Incorporate location names
-site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
+#site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
+site.names <- locations[1:length(prop.df[1,])]
+
 colnames(prop.df) <- site.names
 colnames(counts.df) <- site.names
 head(prop.df)
