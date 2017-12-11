@@ -1,5 +1,5 @@
 # Connect read counts to the annotations and plot
-# Uses as input the output of obitab with read counts per location and the output of MEGAN with taxonomy ID
+# Input: output of obitab (read counts per sample) and MEGAN (taxonomy ID per amplicon)
 
 #rm(list=ls())
 
@@ -24,19 +24,16 @@ datatype <- "SOG_val"
 
 ## Create a filenames list that contains file names for each dataset (1st obitab output; 2nd MEGAN output)
 filenames.list <- list()
-filenames.list[["C3_16s"]] <- c("NGS5_C3_16S_cleanHS.txt", "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt")
-names(filenames.list[["C3_16s"]]) <- c("count", "annot")
-filenames.list[["C3_COI"]] <- c("NGS_C3_cleanHS.txt", "NGS_C3_COI_cleanHS_hits-ex_species.txt")
-names(filenames.list[["C3_COI"]]) <- c("count", "annot")
-filenames.list[["SOG_16s"]] <- c("NGSLib4_cleanHS.txt", "NGSLib4_cleanHS_hits-ex_species.txt")
-names(filenames.list[["SOG_16s"]]) <- c("count", "annot")
-filenames.list[["C3_val"]] <- c("NGSLib6_S1_L001_ali_assi_uniq_c10_55-75_clean_HS.txt"
-                                , "NGSLib6_S1_L001_ali_assi_uniq_c10_55-75clean_HS_annot-ex_sp.txt")
-names(filenames.list[["C3_val"]]) <- c("count", "annot")
-filenames.list[["SOG_val"]] <- c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
-names(filenames.list[["SOG_val"]]) <- c("count", "annot")
-
-
+filenames.list[["C3_val"]] <- setNames(object = c("NGSLib6_S1_L001_ali_assi_uniq_c10_55-75_clean_HS.txt", "NGSLib6_S1_L001_ali_assi_uniq_c10_55-75clean_HS_annot-ex_sp.txt")
+                                       , nm = c("count", "annot"))
+filenames.list[["C3_16s"]] <- setNames(object = c("NGS5_C3_16S_cleanHS.txt", "NGS5_C3_16S_cleanHS_hits-1-ex_species.txt")
+                                       , nm = c("count", "annot"))
+filenames.list[["C3_COI"]] <- setNames(object = c("NGS_C3_cleanHS.txt", "NGS_C3_COI_cleanHS_hits-ex_species.txt")
+                                       , nm = c("count", "annot"))
+filenames.list[["SOG_val"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
+                                        , nm = c("count", "annot"))
+filenames.list[["SOG_16s"]] <- setNames(object = c("NGSLib4_cleanHS.txt", "NGSLib4_cleanHS_hits-ex_species.txt")
+                                        , nm = c("count", "annot"))
 filenames.list
 
 
@@ -47,7 +44,7 @@ annot <- read.delim2(paste("05_annotated/", filenames.list[[datatype]][2], sep =
                      , col.names = c("id","taxon"))
 head(counts)
 head(annot)
-names(counts)
+names(counts) 
 names(annot)
 
 # Sort data
@@ -57,7 +54,6 @@ annot.sorted <- annot[order(annot$id),]
 # Merge
 data <- merge(x = annot.sorted, y = counts.sorted, by = "id")
 names(data)
-str(data)
 
 # Keep only required columns
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # keeps 'sample.' or 'taxon'
@@ -82,13 +78,15 @@ dim(data.df) # see how the number of taxa is reduced
 
 
 #### 1.5 Set location information ####
-locations.C3 <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
+locations <- list()
+locations[["locations.C3"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                    , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                    , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-locations.SOG <- colnames(data.df)[2:length(colnames(data.df))]
+locations[["locations.SOG"]] <- colnames(data.df)[2:length(colnames(data.df))]
 
-sample.locations <- locations.SOG
-#sample.locations <- locations.C3
+location.type <- paste("locations.", sub("_\\S*", "", datatype), sep = "")
+
+sample.locations <- locations[[location.type]]
 
 
 #### 2. Get proportional and count data by taxon per site ####
