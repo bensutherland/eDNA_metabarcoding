@@ -264,7 +264,8 @@ dev.off()
 
 
 #### Plot count data ####
-pdf(file = "06_output_figures/C3_val_counts_by_loc.pdf", width = 10, height = 8)
+filename <- paste("06_output_figures/", datatype, "_counts_by_loc.pdf", sep = "")
+pdf(file = filename, width = 10, height = 8)
 par(mfrow=c(1,1), mar= c(11,4,3,1) + 0.2, mgp = c(2,0.75,0))
 
 position.info <- barplot(as.matrix(counts.df), col = this.palette, las = 2, xaxt = "n")
