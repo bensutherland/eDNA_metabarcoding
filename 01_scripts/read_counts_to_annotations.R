@@ -82,9 +82,6 @@ dim(data.df) # see how the number of taxa is reduced
 
 
 #### 1.5 Set location information ####
-####### TODO ###### 
-# FIX THIS TO AUTOMATE
-
 locations.C3 <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                    , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
                    , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
@@ -92,29 +89,6 @@ locations.SOG <- colnames(data.df)[2:length(colnames(data.df))]
 
 sample.locations <- locations.SOG
 #sample.locations <- locations.C3
-
-# locations.list <- list()
-# locations.list[["C3_16s"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-#                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-#                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-# locations.list[["C3_COI"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-#                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-#                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont")
-# 
-# locations.list[["SOG_16s"]] <- c(colnames(prop.df))
-# locations.list[["C3_val"]] <- c(colnames(prop.df))
-# 
-# # I think this is correct, need to double-check
-# locations.list[["C3_val"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-#                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-#                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-
-
-# # Select locations based on datatype
-# locations <- locations.list[[datatype]]
-
-# # Make index for sample names and locations
-# sample.locations <- as.data.frame(cbind(colnames(prop.df), locations))
 
 
 #### 2. Get proportional and count data by taxon per site ####
@@ -292,9 +266,14 @@ dev.off()
 #### Plot count data ####
 pdf(file = "06_output_figures/C3_val_counts_by_loc.pdf", width = 10, height = 8)
 par(mfrow=c(1,1), mar= c(11,4,3,1) + 0.2, mgp = c(2,0.75,0))
-barplot(as.matrix(counts.df), col = this.palette, las = 2, xaxt = "n")
 
+position.info <- barplot(as.matrix(counts.df), col = this.palette, las = 2, xaxt = "n")
 axis(side = 1, at = position.info, labels = sample.locations, las = 3, cex.axis = 0.9)
+
+#unique to SOG data, graph it without the mock sample...
+# pdf(file = "06_output_figures/C3_val_counts_by_loc_no_mock.pdf", width = 10, height = 8)
+# position.info <- barplot(as.matrix(counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]), col = this.palette, las = 2, xaxt = "n")
+# axis(side = 1, at = position.info, labels = sample.locations[-(which(sample.locations=="sample.Mock"))], las = 3, cex.axis = 0.9)
 
 legend("topright", legend = legend.info$taxon, fill = as.character(legend.info$color), cex  = 0.8)
 dev.off()
