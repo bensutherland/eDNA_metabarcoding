@@ -124,10 +124,10 @@ for(col in 2:ncol(data.df)) {
   result.prop <- (result[,2]/sample.tot)*100 
   
   # Save count values into a list
-  count.list[[sample]] <- result[,2]
+  count.list[[sample]] <- setNames(result[,2], result[,1]) # pull the value into count.list with names as the first column of result
   
   # Save proportions into a list
-  prop.list[[sample]] <- result.prop
+  prop.list[[sample]] <- setNames(result.prop, result[,1])
 }
   
 str(prop.list)
@@ -150,14 +150,18 @@ for(i in 1:length(count.list)){
 
 head(counts.df)
 
-# Incorporate names
+# Incorporate location names
 site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
 colnames(prop.df) <- site.names
 colnames(counts.df) <- site.names
 head(prop.df)
 head(counts.df)
-# write.csv(x = prop.df, file = "05_annotated/proportions_by_taxa.csv")
-# write.csv(x = counts.df, file = "05_annotated/counts_by_taxa.csv")
+
+# Set filenames for saving out
+count.output.csv.filename <- paste("05_annotated/", datatype, "_count_by_taxa.csv", sep = "")
+prop.output.csv.filename <- paste("05_annotated/", datatype, "_prop_by_taxa.csv", sep = "")
+# write.csv(x = counts.df, file = count.output.csv.filename)
+# write.csv(x = prop.df, file = prop.output.csv.filename)
 
 # Find total numbers of reads mapping
 colnames(counts.df)
