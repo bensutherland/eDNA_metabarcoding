@@ -141,11 +141,10 @@ for(i in 1:length(count.list)){
 head(counts.df)
 
 # Incorporate location names
-#site.names <- locations.C3[1:length(prop.df[1,])] # this uses the original imported locations data and the length of the prop.df
-site.names <- locations[1:length(prop.df[1,])]
+site.names <- sample.locations[1:length(prop.df[1,])] # Assumes is in same order for the two major types individually (SOG or C3)
 
-colnames(prop.df) <- site.names
-colnames(counts.df) <- site.names
+colnames(prop.df) <- site.names # name prop.df
+colnames(counts.df) <- site.names # name counts.df
 head(prop.df)
 head(counts.df)
 
