@@ -117,6 +117,13 @@ Personal suggested uses:
 Valentini primers=55-75    
 Other longer amplicons=100-300      
 
+To help determine how many reads make it through each filtering steps, you can use the following commands.    
+For the reads in the fasta after size selecting and count filter:   
+`grep -E '^>' 04_samples/*_ali_assi_uniq_c10_55-75.fa | awk -F"count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`     
+For the reads in the fasta after only keeping head and singletons:
+`grep -E '^>' all_files_ali_assi_uniq_c10_55-75_clean_HS.fa | awk -F"; count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`    
+
+
 Optional: can also test other lengths by streaming into grep: 
 `obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/yourfile.fa | grep -cE '^>' - `
 
