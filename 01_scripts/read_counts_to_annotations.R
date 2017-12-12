@@ -55,6 +55,9 @@ annot.sorted <- annot[order(annot$id),]
 data <- merge(x = annot.sorted, y = counts.sorted, by = "id")
 names(data)
 
+# Count up the reads coming out of MEGAN
+sum(data$count)
+
 # Keep only required columns
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # keeps 'sample.' or 'taxon'
 head(data.df)
@@ -66,7 +69,7 @@ unique(data.df$taxon)
 species.remove <- list()
 species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
 species.remove[["C3_COI"]] <- c("NA")
-species.remove[["C3_val"]] <- c("Homo sapiens")
+species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae")
 species.remove[["SOG_val"]] <- c("Homo sapiens")
 species.remove <- species.remove[[datatype]] # Use datatype for removing species
 species.remove
