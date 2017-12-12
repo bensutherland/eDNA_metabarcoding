@@ -32,7 +32,7 @@ filenames.list[["C3_COI"]] <- setNames(object = c("NGS_C3_cleanHS.txt", "NGS_C3_
                                        , nm = c("count", "annot"))
 filenames.list[["SOG_val"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
                                         , nm = c("count", "annot"))
-filenames.list[["SOG_16s"]] <- setNames(object = c("NGSLib4_cleanHS.txt", "NGSLib4_cleanHS_hits-ex_species.txt")
+filenames.list[["SOG_16s"]] <- setNames(object = c("NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS-1-ex_sp.txt")
                                         , nm = c("count", "annot"))
 filenames.list
 
@@ -71,6 +71,7 @@ species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
 species.remove[["C3_COI"]] <- c("NA")
 species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae")
 species.remove[["SOG_val"]] <- c("Homo sapiens")
+species.remove[["SOG_16s"]] <- c("Homo sapiens", "Homininae")
 species.remove <- species.remove[[datatype]] # Use datatype for removing species
 species.remove
 
