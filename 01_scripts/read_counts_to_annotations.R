@@ -28,7 +28,7 @@ filenames.list[["C3_val"]] <- setNames(object = c("NGSLib6_S1_L001_ali_assi_uniq
                                        , nm = c("count", "annot"))
 filenames.list[["C3_16s"]] <- setNames(object = c("NGS5-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS5-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS-ex_sp.txt")
                                        , nm = c("count", "annot"))
-filenames.list[["C3_COI"]] <- setNames(object = c("NGS_C3_cleanHS.txt", "NGS_C3_COI_cleanHS_hits-ex_species.txt")
+filenames.list[["C3_COI"]] <- setNames(object = c("NGS5-C01sal_S2_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS5-C01sal_S2_L001_ali_assi_uniq_c10_55-775_clean_HS_annot-ex_sp.txt")
                                        , nm = c("count", "annot"))
 filenames.list[["SOG_val"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
                                         , nm = c("count", "annot"))
@@ -202,7 +202,7 @@ if(length(index) > length(palette)){
 }
 
 #Prepare legend size 
-legend.cex <- c(0.8, 0.8, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
+legend.cex <- c(0.8, 0.7, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
 
 
 #### 5. Plot proportion data ####
