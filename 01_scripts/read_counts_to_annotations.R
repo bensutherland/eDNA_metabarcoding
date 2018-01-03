@@ -3,24 +3,22 @@
 
 #rm(list=ls())
 
-# Set working directory depending on the dataset
-#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_val")
-#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_SOG_16S")
-#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s")
-#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_COI")
-#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s_one_ended") # only req one end to assign
-setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_val")
-
-# Install Packages
-#install.packages("RColorBrewer")
-library("RColorBrewer")
-
 # Choose dataset
 #datatype <- "C3_16s"
 #datatype <- "C3_COI"
 #datatype <- "SOG_16s"
 #datatype <- "C3_val"
 datatype <- "SOG_val"
+
+#### 0. Setup (no changes reqd) ####
+# Install Packages
+#install.packages("RColorBrewer")
+library("RColorBrewer")
+
+# Set working directory depending on the dataset
+working.dir <- paste("~/Documents/03_eDNA/eDNA_metabarcoding_", datatype, sep = "")
+setwd(working.dir)
+#setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s_one_ended") # only req one end to assign
 
 ## Create a filenames list that contains file names for each dataset (1st obitab output; 2nd MEGAN output)
 filenames.list <- list()
@@ -34,7 +32,6 @@ filenames.list[["SOG_val"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_
                                         , nm = c("count", "annot"))
 filenames.list[["SOG_16s"]] <- setNames(object = c("NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS-1-ex_sp.txt")
                                         , nm = c("count", "annot"))
-filenames.list
 
 
 #### 1. Import input data and merge #####
@@ -42,8 +39,8 @@ paste("You are analyzing ", datatype, sep = "")
 counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = "")) 
 annot <- read.delim2(paste("05_annotated/", filenames.list[[datatype]][2], sep = ""), header = F
                      , col.names = c("id","taxon"))
-head(counts)
-head(annot)
+# head(counts)
+# head(annot)
 names(counts) 
 names(annot)
 
@@ -81,7 +78,7 @@ data.df <- data.df[ ! data.df$taxon %in% species.remove, ]
 dim(data.df) # see how the number of taxa is reduced
 
 
-#### 1.5 Set location information ####
+#### 1.1 Set location information ####
 locations <- list()
 locations[["locations.C3"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                    , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
@@ -91,6 +88,7 @@ locations[["locations.SOG"]] <- colnames(data.df)[2:length(colnames(data.df))]
 location.type <- paste("locations.", sub("_\\S*", "", datatype), sep = "")
 
 sample.locations <- locations[[location.type]]
+sample.locations
 
 
 #### 2. Get proportional and count data by taxon per site ####
@@ -162,6 +160,19 @@ prop.output.csv.filename <- paste("05_annotated/", datatype, "_prop_by_taxa.csv"
 colnames(counts.df)
 sample.reads <- colSums(x = counts.df[, c(1:ncol(counts.df))])
 
+
+# Filter counts table to remove very low values
+min.count <- 10
+counts.filtered.df <- counts.df
+
+head(counts.filtered.df)
+counts.filtered.df[which(counts.filtered.df < min.count)]
+
+counts.filtered.df[which(counts.filtered.df < min.count)] <- 0
+head(counts.filtered.df)
+
+counts.filtered.filename <- paste("05_annotated/", datatype, "_count_by_taxa_filt_at_", min.count, ".csv", sep = "")
+# write.csv(x = counts.filtered.df, file = counts.filtered.filename)
 
 ##### 4. Prepare plotting ####
 # Prepare palette

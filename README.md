@@ -158,8 +158,10 @@ Choose: `readName_to_taxonName`
 Save into the folder  `05_annotated`  
 
 ## 08. Connect read counts and annotations    
-This will use the R script, suggested currently to run interactively.   
+This will use the R script `read_counts_to_annotations.R`, run interactively.   
 Necessary inputs:   
-Output from `MEGAN`, and output from `obitab`   
+Amplicon annotation output from MEGAN, and amplicon read count from `obitab`   
 
+In brief, this will merge these two inputs, attach locations, aggregate different amplicons with same annotation, calculate proportions, save out proportion plots and count/proportion tables.    
 
+Within here, one can apply a low expression filter to remove any counts less than 10.   
