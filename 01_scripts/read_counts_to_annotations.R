@@ -55,7 +55,28 @@ names(data)
 # Count up the reads coming out of MEGAN
 sum(data$count)
 
-# Keep only required columns
+##### Limit to amplicon size #####
+# Investigate which species that you will remove with a particular amplicon size filter
+losing.species <- sort(unique(data[which(data$seq_length > 250), "taxon"]))
+losing.species
+keep.species <- sort(unique(data[which(data$seq_length <= 250), "taxon"]))
+keep.species
+
+# Calculate how many reads are lost when filtering by size here
+data[which(data$seq_length > 250), ]
+sum(data[which(data$seq_length > 250), "count"])
+# 985,475 reads
+sum(data[which(data$seq_length <= 250), "count"])
+# 4,085,408
+
+# Limit to the rows with amplicons <= 250 bp
+data2 <- data[data$seq_length <= 250, ]
+sum(data2$count)
+sum(data$count)
+data <- data2
+str(data)
+
+###### Reduce columns within data ####
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # keeps 'sample.' or 'taxon'
 head(data.df)
 
