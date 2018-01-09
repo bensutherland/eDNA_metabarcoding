@@ -107,9 +107,12 @@ percent.no.hits <- no.hits/all.hits * 100
 percent.not.assigned <- not.assigned/all.hits * 100
 
 options(scipen= 999999, digits=2)
-unannot.df <- rbind(all.hits, no.hits, percent.no.hits, not.assigned, percent.not.assigned) 
-write.csv(x = unannot.df, file = table.filename)
+unannot.df <- rbind(all.hits, no.hits, percent.no.hits, not.assigned, percent.not.assigned)
+unannot.df <- round(x = unannot.df, digits = 2)
 
+colnames(unannot.df) <- sample.locations
+
+write.csv(x = unannot.df, file = table.filename)
 
 
 # Set species to remove (e.g. humans)
