@@ -83,6 +83,35 @@ head(data.df)
 # View species that are present in dataset
 unique(data.df$taxon)
 
+
+#### 1.1 Set location information ####
+locations <- list()
+locations[["locations.C3"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
+                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
+                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
+locations[["locations.SOG"]] <- colnames(data.df)[2:length(colnames(data.df))]
+
+location.type <- paste("locations.", sub("_\\S*", "", datatype), sep = "")
+
+sample.locations <- locations[[location.type]]
+sample.locations
+
+
+##### Explore unassigned or unannotated data #####
+head(data.df)
+table.filename <- paste("05_annotated/", datatype, "_unassigned_unknown_counts.csv", sep = "")
+no.hits <- colSums(data.df[data.df$taxon == "No hits" , 2:length(colnames(data.df))])
+not.assigned <- colSums(data.df[data.df$taxon == "Not assigned" , 2:length(colnames(data.df))])
+all.hits <- colSums(data.df[, 2:length(colnames(data.df))])
+percent.no.hits <- no.hits/all.hits * 100
+percent.not.assigned <- not.assigned/all.hits * 100
+
+options(scipen= 999999, digits=2)
+unannot.df <- rbind(all.hits, no.hits, percent.no.hits, not.assigned, percent.not.assigned) 
+write.csv(x = unannot.df, file = table.filename)
+
+
+
 # Set species to remove (e.g. humans)
 species.remove <- list()
 species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
@@ -99,17 +128,6 @@ data.df <- data.df[ ! data.df$taxon %in% species.remove, ]
 dim(data.df) # see how the number of taxa is reduced
 
 
-#### 1.1 Set location information ####
-locations <- list()
-locations[["locations.C3"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-                   , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-                   , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-locations[["locations.SOG"]] <- colnames(data.df)[2:length(colnames(data.df))]
-
-location.type <- paste("locations.", sub("_\\S*", "", datatype), sep = "")
-
-sample.locations <- locations[[location.type]]
-sample.locations
 
 
 #### 2. Get proportional and count data by taxon per site ####
