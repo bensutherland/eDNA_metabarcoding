@@ -116,12 +116,13 @@ write.csv(x = unannot.df, file = table.filename)
 
 
 # Set species to remove (e.g. humans)
+remove.from.all <- c("Not assigned", "No hits")
 species.remove <- list()
-species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens")
-species.remove[["C3_COI"]] <- c("NA")
-species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae")
-species.remove[["SOG_val"]] <- c("Homo sapiens")
-species.remove[["SOG_16s"]] <- c("Homo sapiens", "Homininae")
+species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens", remove.from.all)
+species.remove[["C3_COI"]] <- c("NA", remove.from.all)
+species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae", remove.from.all)
+species.remove[["SOG_val"]] <- c("Homo sapiens", remove.from.all)
+species.remove[["SOG_16s"]] <- c("Homo sapiens", "Homininae", remove.from.all)
 species.remove <- species.remove[[datatype]] # Use datatype for removing species
 species.remove
 
