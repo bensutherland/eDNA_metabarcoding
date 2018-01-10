@@ -62,14 +62,23 @@ losing.species
 keep.species <- sort(unique(data[which(data$seq_length <= 250), "taxon"]))
 keep.species
 
-# Calculate how many reads are lost when filtering by size here
-data[which(data$seq_length > 250), ]
-sum(data[which(data$seq_length > 250), "count"])
-# 985,475 reads
-sum(data[which(data$seq_length <= 250), "count"])
-# 4,085,408
+# what species in the losing species are also present in the keep species?
+losing.species[losing.species %in% keep.species]
 
-# Limit to the rows with amplicons <= 250 bp
+# Calculate how many reads are lost when filtering by size here
+# data[which(data$seq_length > 250), ]
+remove.sum <- sum(data[which(data$seq_length > 250), "count"]) # removing this
+keep.sum <- sum(data[which(data$seq_length <= 250), "count"]) # keeping this
+remove.sum / (remove.sum + keep.sum) * 100 # percent being lost by this filter
+
+# Specific species
+target.species <- "Squalus acanthias"
+target.sp.removed.sum <- sum(data[data$taxon==target.species & data$seq_length > 250, "count"])
+target.sp.retained.sum <- sum(data[data$taxon==target.species & data$seq_length <= 250, "count"]) 
+total.sum <- sum(data[data$taxon==target.species, "count"])
+target.sp.removed.sum / total.sum * 100
+
+# Finally, limit to the rows with amplicons <= 250 bp
 data2 <- data[data$seq_length <= 250, ]
 sum(data2$count)
 sum(data$count)
@@ -258,7 +267,7 @@ if(length(index) > length(palette)){
 
 ##### Create Legend ####
 # Prepare legend size 
-legend.cex <- c(1, 0.7, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
+legend.cex <- c(1, 0.7, 1, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
 
 # Create dataframe with the taxon and the color
 color.index <- cbind(rownames(prop.df), this.palette)
