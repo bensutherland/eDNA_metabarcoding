@@ -34,7 +34,7 @@ filenames.list[["SOG_16s"]] <- setNames(object = c("NGS4-16Schord_S1_L001_ali_as
                                         , nm = c("count", "annot"))
 
 
-#### 1. Import input data and merge #####
+#### 1.0 Import input data and merge #####
 paste("You are analyzing ", datatype, sep = "")
 counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = "")) 
 annot <- read.delim2(paste("05_annotated/", filenames.list[[datatype]][2], sep = ""), header = F
@@ -55,7 +55,7 @@ names(data)
 # Count up the reads coming out of MEGAN
 sum(data$count)
 
-##### Limit to amplicon size #####
+##### 1.1 Limit to amplicon size #####
 # Investigate which species that you will remove with a particular amplicon size filter
 losing.species <- sort(unique(data[which(data$seq_length > 250), "taxon"]))
 losing.species
@@ -85,7 +85,7 @@ sum(data$count)
 data <- data2
 str(data)
 
-###### Reduce columns within data ####
+###### 1.2 Reduce columns within data ####
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # keeps 'sample.' or 'taxon'
 head(data.df)
 
@@ -93,7 +93,7 @@ head(data.df)
 unique(data.df$taxon)
 
 
-#### 1.1 Set location information ####
+#### 1.3 Set location information ####
 locations <- list()
 locations[["locations.C3"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
                                  , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
@@ -106,7 +106,7 @@ sample.locations <- locations[[location.type]]
 sample.locations
 
 
-##### Explore unassigned or unannotated data #####
+##### 1.4  Explore unassigned or unannotated data #####
 head(data.df)
 table.filename <- paste("05_annotated/", datatype, "_unassigned_unknown_counts.csv", sep = "")
 no.hits <- colSums(data.df[data.df$taxon == "No hits" , 2:length(colnames(data.df))])
@@ -121,7 +121,7 @@ unannot.df <- round(x = unannot.df, digits = 2)
 
 colnames(unannot.df) <- sample.locations
 
-write.csv(x = unannot.df, file = table.filename)
+# write.csv(x = unannot.df, file = table.filename)
 
 
 # Set species to remove (e.g. humans)
@@ -226,7 +226,7 @@ head(counts.filtered.df)
 counts.filtered.filename <- paste("05_annotated/", datatype, "_count_by_taxa_filt_at_", min.count, ".csv", sep = "")
 # write.csv(x = counts.filtered.df, file = counts.filtered.filename)
 
-##### 4. Prepare plotting ####
+##### 4.0 Prepare plotting (colors) ####
 # Prepare palette
 #display.brewer.all() # see color options
 cols <- brewer.pal(n = 9, name = "Set1")
@@ -265,9 +265,19 @@ if(length(index) > length(palette)){
 }
 
 
-##### Create Legend ####
+#### 4.1 Drop Mock Column ####
+# This will remove the mock column for purposes of plotting as it overwhelms all of the data (due to too much sequencing for this)
+if("sample.Mock" %in% colnames(counts.df) == T){
+  counts.df <- counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]
+  prop.df <- prop.df[,-(which(colnames(prop.df)=="sample.Mock"))]
+  site.names <- site.names[-(which(site.names == "sample.Mock"))]
+  sample.reads <- sample.reads[-(which(names(sample.reads)=="sample.Mock"))]
+}
+
+
+##### 4.2 Create Legend ####
 # Prepare legend size 
-legend.cex <- c(1, 0.7, 1, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
+legend.cex <- c(1, 1, 1, 1, 1) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
 
 # Create dataframe with the taxon and the color
 color.index <- cbind(rownames(prop.df), this.palette)
@@ -293,7 +303,6 @@ high.presence.taxa
 legend.info <- color.index.df[color.index.df$taxon %in% high.presence.taxa, ]
 
 
-
 #### 5. Plot  ####
 filename <- paste("06_output_figures/", datatype, "_read_count_and_prop_by_loc.pdf", sep = "")
 
@@ -308,26 +317,15 @@ position.info <- barplot(as.matrix(counts.df)
                          , ylab = "Reads")
 # axis(side = 1, at = position.info, labels = sample.locations, las = 3, cex.axis = 0.9)
 
-#unique to SOG data, graph it without the mock sample...
-# pdf(file = "06_output_figures/C3_val_counts_by_loc_no_mock.pdf", width = 10, height = 8)
-# position.info <- barplot(as.matrix(counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]), col = this.palette, las = 2, xaxt = "n")
-# axis(side = 1, at = position.info, labels = sample.locations[-(which(sample.locations=="sample.Mock"))], las = 3, cex.axis = 0.9)
-
-#legend("topright", legend = legend.info$taxon, fill = as.character(legend.info$color), cex  = 0.8)
-
-
 # Plot proportion data
 position.info <- barplot(as.matrix(prop.df), col = this.palette
         , xlim = c(0, ncol(prop.df)+4)
         , las = 1
-        #, cex.names = 0.9
-        #, cex.axis = 0.9
         , ylab = "Proportion (%)"
         , xaxt = "n")
 
 axis(side = 1, at = position.info, 
      labels = site.names, las = 3
-     #, cex.axis = 0.9
      )
 
 # Add information about read counts per sample
@@ -335,14 +333,13 @@ mtext(x = position.info, text = sample.reads
       , side=3, at = position.info, cex = 0.7)
 
 
-# blank second plot
+# Plot Legend, first make blank second plot
 plot(1, type = "n", axes = F, xlab = "", ylab = "")
 
 # fix legend info to character text
 legend(x = "center", y = "center", legend = legend.info$taxon
         , fill = as.character(legend.info$color), cex = legend.cex[datatype]
         , ncol = 4)
-
 
 dev.off()
 #
