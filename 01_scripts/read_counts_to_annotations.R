@@ -255,36 +255,11 @@ if(length(index) > length(palette)){
   this.palette <- palette[index]
 }
 
-#Prepare legend size 
-legend.cex <- c(0.8, 0.7, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
 
+##### Create Legend ####
+# Prepare legend size 
+legend.cex <- c(1, 0.7, 0.8, 0.8, 0.8) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
 
-#### 5. Plot proportion data ####
-filename <- paste("06_output_figures/", datatype, "_proportion_by_loc.pdf", sep = "")
-
-# if want to work interactively, comment out the following line
-pdf(file = filename, width = 10, height = 8)
-par(mfrow=c(2,1), mar= c(4,2.5,3,1) + 0.2, mgp = c(2,0.75,0))
-
-# Barplot proportion data
-position.info <- barplot(as.matrix(prop.df), col = this.palette
-        , xlim = c(0, ncol(prop.df)+4)
-        , las = 1
-        , cex.names = 0.9
-        , cex.axis = 0.9
-        , ylab = "Proportion (%)"
-        , xaxt = "n")
-
-axis(side = 1, at = position.info, 
-     labels = site.names, las = 3
-     , cex.axis = 0.9)
-
-# Add information about read counts per sample
-mtext(x = position.info, text = sample.reads
-      , side=3, at = position.info, cex = 0.7)
-
-
-## Create Legend
 # Create dataframe with the taxon and the color
 color.index <- cbind(rownames(prop.df), this.palette)
 colnames(color.index) <- c("taxon","color")
@@ -309,6 +284,48 @@ high.presence.taxa
 legend.info <- color.index.df[color.index.df$taxon %in% high.presence.taxa, ]
 
 
+
+#### 5. Plot  ####
+filename <- paste("06_output_figures/", datatype, "_read_count_and_prop_by_loc.pdf", sep = "")
+
+# if want to work interactively, comment out the following line
+pdf(file = filename, width = 10, height = 8)
+par(mfrow=c(3,1), mar= c(2.5,4.5,2,1) + 0.2, mgp = c(3.75, 0.75, 0))
+
+# Plot count data
+position.info <- barplot(as.matrix(counts.df)
+                         , col = this.palette, las = 2, xaxt = "n"
+                         , xlim = c(0, ncol(prop.df)+4)
+                         , ylab = "Reads")
+# axis(side = 1, at = position.info, labels = sample.locations, las = 3, cex.axis = 0.9)
+
+#unique to SOG data, graph it without the mock sample...
+# pdf(file = "06_output_figures/C3_val_counts_by_loc_no_mock.pdf", width = 10, height = 8)
+# position.info <- barplot(as.matrix(counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]), col = this.palette, las = 2, xaxt = "n")
+# axis(side = 1, at = position.info, labels = sample.locations[-(which(sample.locations=="sample.Mock"))], las = 3, cex.axis = 0.9)
+
+#legend("topright", legend = legend.info$taxon, fill = as.character(legend.info$color), cex  = 0.8)
+
+
+# Plot proportion data
+position.info <- barplot(as.matrix(prop.df), col = this.palette
+        , xlim = c(0, ncol(prop.df)+4)
+        , las = 1
+        #, cex.names = 0.9
+        #, cex.axis = 0.9
+        , ylab = "Proportion (%)"
+        , xaxt = "n")
+
+axis(side = 1, at = position.info, 
+     labels = site.names, las = 3
+     #, cex.axis = 0.9
+     )
+
+# Add information about read counts per sample
+mtext(x = position.info, text = sample.reads
+      , side=3, at = position.info, cex = 0.7)
+
+
 # blank second plot
 plot(1, type = "n", axes = F, xlab = "", ylab = "")
 
@@ -321,21 +338,4 @@ legend(x = "center", y = "center", legend = legend.info$taxon
 dev.off()
 #
 # Save out as 10 x 8 in portrait
-
-
-#### Plot count data ####
-filename <- paste("06_output_figures/", datatype, "_counts_by_loc.pdf", sep = "")
-pdf(file = filename, width = 10, height = 8)
-par(mfrow=c(1,1), mar= c(11,4,3,1) + 0.2, mgp = c(2,0.75,0))
-
-position.info <- barplot(as.matrix(counts.df), col = this.palette, las = 2, xaxt = "n")
-axis(side = 1, at = position.info, labels = sample.locations, las = 3, cex.axis = 0.9)
-
-#unique to SOG data, graph it without the mock sample...
-# pdf(file = "06_output_figures/C3_val_counts_by_loc_no_mock.pdf", width = 10, height = 8)
-# position.info <- barplot(as.matrix(counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]), col = this.palette, las = 2, xaxt = "n")
-# axis(side = 1, at = position.info, labels = sample.locations[-(which(sample.locations=="sample.Mock"))], las = 3, cex.axis = 0.9)
-
-legend("topright", legend = legend.info$taxon, fill = as.character(legend.info$color), cex  = 0.8)
-dev.off()
 
