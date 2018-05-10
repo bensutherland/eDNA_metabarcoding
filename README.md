@@ -1,20 +1,35 @@
 # eDNA_metabarcoding
-Note: This repo is mainly for the developers purpose, although it is attempted to be robust to different data types, it comes with no guarantees of functionality or usefullness.    
+Note: This repo is mainly for the developers purpose, no guarantees of functionality or usefulness.    
 
 
 Dependencies:    
 `python 2.7`    
 `gcc`     
+`R`     
 `python-dev packages`        
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
 `MEGAN 6 (Community Edition)` https://ab.inf.uni-tuebingen.de/software/megan6     
-
+`blastn` https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download     
 
 To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH      
 
 
 Launch Obitools    
 `obitools`    
+
+This pipeline can handle the following:     
+* single-end (SE) or paired-end (PE) data      
+* demultiplexed or multiplexed     
+* multiple amplicons within a single sample file
+...depending on the above, there will be different steps to take in this repo.    
+
+See the workflow figure below to show how to start these various analyses (Figure 1).    
+
+![](00_archive/eDNA_metabarcoding_workflow.png)
+
+
+
+
 
 ### Prepare raw data
 Copy raw data into `02_raw_data`    
