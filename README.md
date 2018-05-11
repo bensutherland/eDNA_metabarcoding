@@ -126,6 +126,8 @@ As above, use obiannotate to annotate your sequences.
 Move on to [Part 2](#part-2-main-analysis).
 
 ## Part 2. Main Analysis 
+![](00_archive/eDNA_metabarcoding_workflow_2.png)
+
 ### 2.1. Retain Only Unique Reads
 Input is a single fastq file containing all samples for a specific amplicon, annotated with sample name.   
 
@@ -148,7 +150,7 @@ PE data does full filtering as above:
 `./01_scripts/04_denoise_and_remove_err.sh` (edit LMIN, LMAX, MIN_READS)    
 
 SE data filters only on size and count:    
-`./01_scripts/04_denoise_and_remove_err.sh` (edit LMIN, LMAX, MIN_READS)    
+`./01_scripts/04_denoise_and_remove_err_SE.sh` (edit LMIN, LMAX, MIN_READS)    
     
 In brief, this does the following: 
 ```
