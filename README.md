@@ -1,109 +1,117 @@
 # eDNA_metabarcoding
 Note: This repo is mainly for the developers purpose, no guarantees of functionality or usefulness.    
 
-
 Dependencies:    
-`python 2.7`    
-`gcc`     
-`R`     
-`python-dev packages`        
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
 `MEGAN 6 (Community Edition)` https://ab.inf.uni-tuebingen.de/software/megan6     
 `blastn` https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download     
+`cutadapt` http://cutadapt.readthedocs.io/en/stable/     
+`R`     
 
-To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH      
+To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH     
 
-
-Launch Obitools    
+Launch OBITools    
 `obitools`    
 
-This pipeline can handle the following:     
+This pipeline can handle the following, and to find the appropriate pipeline, see Figure 1:     
 * single-end (SE) or paired-end (PE) data      
-* demultiplexed or multiplexed     
-* multiple amplicons within a single sample file
-...depending on the above, there will be different steps to take in this repo.    
-
-See the workflow figure below to show how to start these various analyses (Figure 1).    
+* demultiplexed or multiplexed data     
+* multiple amplicons within a single sample file     
 
 ![](00_archive/eDNA_metabarcoding_workflow.png)
-
-
-
-
+**Figure 1.** eDNA_metabarcoding workflow, showing the front end different options for either single-end (SE) or paired-end (PE) data, prior to the main analysis section. The grey box pipelines are variants derived from the standard multiplexed workflow (currently more stable).     
 
 ### Prepare raw data
-Copy raw data into `02_raw_data`    
+Copy raw data into `02_raw_data`, decompress, then run fastqc to view quality.    
 
-Decompress fastq.gz files
 ```
 cd 02_raw_data     
 for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done
-```
-
-Optional: Run FastQC on input files to view quality   
-```
 mkdir 02_raw_data/fastqc_output    
 fastqc -o 02_raw_data/fastqc_output 02_raw_data/*.fastq    
 multiqc -o 02_raw_data/fastqc_output/ 02_raw_data/fastqc_output    
 ```
 
 ### 00. Prepare the interpretation files
-Note: This must be done for each sequencing lane or chip separately       
+Note: This must be done for each sequencing lane or chip separately. Use `00_archive/interp_example.txt` as a template.            
 
-*Importantly*, for auto matching of interpretation to fastq files, use the following naming convention:      
-Interpretation files, name with the full fastq file name up to `R1_001.fastq` or `R2_001.fastq`, and replace this with `interp.txt`    
-e.g.    
-fastq files: `Lib1_S1_L001_R1_001.fastq` and `Lib1_S1_L001_R2_001.fastq`     
-interp file: `Lib1_S1_L001_interp.txt`
+**Importantly**, name the interpretation file with the input fastq name, but replace `R[1/2]_001.fastq` with `interp.txt`    
+e.g. `Lib1_S1_L001_R1_001.fastq`, `Lib1_S1_L001_R2_001.fastq`, `Lib1_S1_L001_interp.txt`       
 
-Use the file `00_archive/interp_example.txt` as a template to create an interp file for your samples.
- 
 
-### 01. Merge paired-end reads (PE only)   
-This step is for PE reads only, if data is SE, skip to [Separate Individuals](#separate-individuals-se-start).    
+## Part 1a. Prepare input data - Multiplexed Data
+Depending on the data type (see Figure 1), the steps taken here will vary.
 
-Launch script to run illuminapairedend to merge read files      
-`01_scripts/01a_read_merging.sh`      
-Essentially: `illuminapairedend --score-min=40 -r R2.fq R1.fq > output.fq`
-
-Then launch the following to only retain aligned sequences    
+### 01. Merging Paired-End Reads 
+Paired-end data will undergo read merging first:    
+`01_scripts/01a_read_merging.sh`     
+(essentially: `illuminapairedend --score-min=40 -r R2.fq R1.fq > output.fq`)      
+Then retain only the merged (aligned) reads:     
 `01_scripts/01b_retain_aligned.sh`     
-Essentially: `obigrep -p 'mode!="joined"' input.fq > output.fq`   
+(essentially: `obigrep -p 'mode!="joined"' input.fq > output.fq`)   
 
-Detect how many reads remain after keeping only merged    
+How many reads remain after keeping only merged?     
 `grep -cE '^\+$' 03_merged/*ali.fq`
 
+Single-end data is not merged, skip to [Separate Individuals](#separate-individuals-se-start).    
+
 ### 02. Separate Individuals (SE start)   
-If you are using single-end data, to match the initial PE steps, use the following script (for Mac just use cp, instead of cp -l):   
+If you are using single-end data, match the output of initial PE steps:   
 `cp -l 02_raw_data/your_file_R1_001.fastq 03_merged/your_file_ali.fq`    
 
-Launch script to Use `ngsfilter` with your interp files to separate individuals out of your aligned fq file. All unidentified reads will go into an unidentified.fq   
+Use ngsfilter with your interp files to separate individuals out of the `*.ali.fq` file.     
 `./01_scripts/02_ngsfilter.sh`    
-Essentially: `ngsfilter -t your_interp.txt -u unidenfied.fq input.fq > output_ali_assi.fq`    
+(essentially: `ngsfilter -t your_interp.txt -u unidenfied.fq input.fq > output_ali_assi.fq`)    
 
-Detect how many reads were assigned to a sample?   
+How many reads were assigned to a sample?   
 `for i in $(ls 04_samples/*assi.fq) ; do echo $i ; grep -cE '^\+$' $i ;  done`   
 
-Depending on your project, this may be a good place to simplify by concatenating all of your output files together.        
+If each output file is annotated with the sample ID, you can concatenate the files all together:     
 ```
 mkdir 04_samples/sep_indiv
 mv 04_samples/*.fq 04_samples/sep_indiv
 cat 04_samples/sep_indiv/*_ali_assi.fq > 04_samples/all_files_ali_assi.fq
 ```
 
-The following one-liner will provide the number reads assigned per sample using your assigned fastq and interp (here using `all_files_ali_assi.fq` as assigned fastq:   
-`for i in $(grep -vE '^#' 00_archive/*_interp.txt | awk '{ print $2 }' - | uniq) ; do echo "sample_$i" ; grep -E "sample=$i;" 04_samples/all_files_ali_assi.fq | wc -l ; done > ./04_samples/assigned_reads_per_sample.txt`    
+Next will be Part 2. 
 
-Clean up this file before bringing to excel to make a few calculations (e.g. in excel, min, max, mean, sd):      
-Note, replace the NTC terms with the NTC labels used in your study.    
-`tr '\n' ',' < 04_samples/assigned_reads_per_sample.txt | sed 's/,sample/\nsample/g' - | grep -vE 'NTC|ExtCnt|Mock' - | awk -F"," '{ print $2 }' - > 04_samples/perform_calcs.txt`    
+## Part 1b. Prepare input data - De-multiplexed data
+This section is the preparation of input data section if your data comes de-multiplexed. Depending on the data type (see Figure 1), the steps taken here will vary.  
+
+### 01. De-multiplexed single-amplicon (SE and PE)
+Remove the primers from the reads:   
+`01_scripts/00_cutadapt_primer_seq.sh`    
+(essentially: cutadapt (#show options#))
 
 
-### 03. Retain only unique reads
+Paired-end data, merge reads and only keep those that merge:   
+`01_scripts/01a_read_merging_no_prime.sh`    
+`01_scripts/01b_retain_aligned.sh`    
+
+Paired-end data, annotate reads with the sample ID, then combine all read files into one:    
+`01_scripts/obiannotate_ident.sh`
+
+Paired-end data can then move to Part 2.   
+
+
+Single-end data, enter the obitools pipeline via a failed run of ngsfilter and take all of the 'unidentied reads' per sample as your sample's reads:    
+`01_scripts/02_ngsfilter_SE_exp_unident.sh`    
+
+Single-end data, annotate reads with sample ID, then combine all read files into one:     
+`01_scripts/obiannotate_unident.sh`
+
+Cut the single end data to a uniform size, which improves the identification of non-unique amplicons, using cutadapt:  `cutadapt --length 230 -o 04b_annotated_samples/merged_data_assi_230.fq 04b_annotated_samples/merged_data_assi.fq`      
+Single-end data can then move to Part 2. 
+
+### 02. De-multiplexed multiple-amplicon (SE option only)
+(#todo from HABs 18S) 
+
+## Part 2. Analysis 
+### 01. Retain Only Unique Reads
 Use obiuniq to keep one record per unique amplicon in the fastq (outputs fasta).   
-`./01_scripts/03_retain_unique.sh`   
-
-Essentially: `obiuniq -m sample input.fq > output_uniq.fa`    
+For paired-end data: `./01_scripts/03_retain_unique_PE.sh`      
+For single-end data: `./01_scripts/03_retain_unique_SE.sh`     
+(essentially: `obiuniq -m sample input.fq > output_uniq.fa`)        
 One can also add other -m flags, such as `run`, or `pcr_rep`, etc., anything that you may want to summarize over using obitab later.    
 
 Optional: sum up the count value to make sure all reads are accounted for:    
@@ -112,8 +120,11 @@ Optional: sum up the count value to make sure all reads are accounted for:
 Optional: look at the distribution of counts   
 `grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | sort -nr | less`
 
-Optional: take another look at the distribution    
-`obistat -c count 04_samples/NGSLib1_ali_assi_uniq_trim.fa | sort -nk1 | head -20`
+
+
+CURRENTLY UPDATED TO HERE 
+
+
 
 ### 04. Denoise (size and count) and remove putative seq/pcr errors
 Use obigrep to only retain reads within a specified size range and minimum count. Then use obiclean to only keep the head (H) or singleton (S) amplicons, not the internals (I) (slight deviations from the head). Currently using `r=0.5`    
