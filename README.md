@@ -127,63 +127,59 @@ Move on to [Part 2](#URL-here)
 
 ## Part 2. Main Analysis 
 ### 01. Retain Only Unique Reads
+Input is a single fastq file containing all samples for a specific amplicon, annotated with sample name.   
+
 Use obiuniq to keep one record per unique amplicon in the fastq (outputs fasta).   
 For paired-end data: `./01_scripts/03_retain_unique_PE.sh`      
 For single-end data: `./01_scripts/03_retain_unique_SE.sh`     
-(essentially: `obiuniq -m sample input.fq > output_uniq.fa`)        
-One can also add other -m flags, such as `run`, or `pcr_rep`, etc., anything that you may want to summarize over using obitab later.    
+(in brief: `obiuniq -m sample 04_samples/*assi.fq > 04_samples/*_uniq.fa`)        
+Note: one can also add other -m flags, such as `run`, or `pcr_rep`, etc., anything that you may want to summarize over using obitab later.    
 
-Optional: sum up the count value to make sure all reads are accounted for:    
-`grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
+Audit: sum up the count value to make sure all reads are accounted for:    
+`grep -E '^>' 04_samples/your_file_ali_assi_uniq.fa | awk -F'\ count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
 
-Optional: look at the distribution of counts   
-`grep -E '^>' 04_samples/NGSLib1_ali_assi_uniq.fa | awk -F'count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | sort -nr | less`
+Audit: look at the distribution of counts   
+`grep -E '^>' 04_samples/your_file_ali_assi_uniq.fa | awk -F'\ count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | sort -nr | less`
 
-
-
-CURRENTLY UPDATED TO HERE 
-
-
-
-### 04. Denoise (size and count) and remove putative seq/pcr errors
+### 02. Denoise by Filtering by Size, Count, and PCR/Seq Error
 Use obigrep to only retain reads within a specified size range and minimum count. Then use obiclean to only keep the head (H) or singleton (S) amplicons, not the internals (I) (slight deviations from the head). Currently using `r=0.5`    
-    
-Edit the following script to set the `LMIN`, `LMAX` and `MIN_READS` variables, then run it.  
-`./01_scripts/04_denoise_and_remove_err.sh`    
 
-Essentially, altogether this does: 
+PE data does full filtering as above:    
+`./01_scripts/04_denoise_and_remove_err.sh` (edit LMIN, LMAX, MIN_READS)    
+
+SE data filters only on size and count:    
+`./01_scripts/04_denoise_and_remove_err.sh` (edit LMIN, LMAX, MIN_READS)    
+    
+In brief, this does the following: 
 ```
 obigrep --lmin <min> --lmax <max> -p 'count>= <min.reads>' input.fa > output.fa     
 obiclean -s merged sample -r 0.05 output_obigrep.fa > output_obiclean.fa   
 obigrep -a 'obiclean_status:s|h' output_obiclean.fa > output_all.fa
 ```
 
-Personal suggested uses:   
-Valentini primers=55-75    
-Other longer amplicons=100-300      
-
-To help determine how many reads make it through each filtering steps, you can use the following commands.    
-For the reads in the fasta after size selecting and count filter:   
-`grep -E '^>' 04_samples/*_ali_assi_uniq_c10_55-75.fa | awk -F"count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`     
-For the reads in the fasta after only keeping head and singletons:
+Audit: determine how many reads make it through each filtering steps:    
+Reads in the fasta after size selecting/count filter:   
+`grep -E '^>' 04_samples/*_ali_assi_uniq_c10_55-75.fa | awk -F"\ count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`     
+Reads in the fasta after only keeping head and singletons:      
 `grep -E '^>' all_files_ali_assi_uniq_c10_55-75_clean_HS.fa | awk -F"; count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`    
 
-
-Optional: can also test other lengths by streaming into grep: 
+Note: can also test other lengths by streaming into grep: 
 `obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/yourfile.fa | grep -cE '^>' - `
 
-The final output of this script will be used as an input to the BLAST query below.   
-Note: one can try different count parameters, for example, and can run it within the existing directory.    
-
-## 05. Export data     
+### 05. Export data     
 Use obitab to output a tab-delimited text file that will be used as an input to the R Script below.   
 `./01_scripts/05_obitab_export.sh`    
-Essentially: `obitab --output-seq input.fa > output.txt`   
-
+(In brief: `obitab --output-seq 04_samples/*clean_HS.fa > 04_samples/*.txt`)   
 
 ## 06. Assign each sequence to a taxon
 Use a blastn to align the H and S fasta file against nt (NCBI remote).   
 `blastn -db nt -query 04_samples/your_cleaned_HS.fa -out 05_annotated/your_lib_output.txt -remote -num_descriptions 10 -num_alignments 10`    
+
+Or if running a massive blast, use parallel:   
+`SEQUENCE_FILE="04_samples/your_filtered_fasta.fa" ; OUTPUT="05_annotated/your_filtered_fasta_hits.txt" ; cat $SEQUENCE_FILE | parallel -j 12 -k --block 1k --recstart '>' --pipe 'blastn -db /home/ben/blastplus_databases/nt -query - -num_descriptions 10 -num_alignments 10 ' > $OUTPUT`    
+
+Track output:    
+`grep -cE 'Query= ' 05_annotated/your_filtered_fasta_hits.txt`
 
 Note: for MEGAN, the blast output must be standard output format, not outfmt.  
 
@@ -210,3 +206,5 @@ Amplicon annotation output from MEGAN, and amplicon read count from `obitab`
 In brief, this will merge these two inputs, attach locations, aggregate different amplicons with same annotation, calculate proportions, save out proportion plots and count/proportion tables.    
 
 Within here, one can apply a low expression filter to remove any counts less than 10.   
+
+(note: currently working on improving this script to be more universal. See a larger version on `read_counts_to_annotations_HABs.R`)    
