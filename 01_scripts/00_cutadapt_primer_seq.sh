@@ -1,6 +1,6 @@
 #!/bin/bash
 # Remove the primer sequences from the forward and reverse reads 
-# have not yet applied quality filter, as this is before read merging
+# No quality filter, as this is before potential read merging
 
 # Global variables
 RAW_FOLDER="02_raw_data"
