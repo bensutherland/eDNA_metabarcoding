@@ -21,7 +21,7 @@ This pipeline can handle the following, and to find the appropriate pipeline, se
 ![](00_archive/eDNA_metabarcoding_workflow.png)
 **Figure 1.** eDNA_metabarcoding workflow, showing the front end different options for either single-end (SE) or paired-end (PE) data, prior to the main analysis section. The grey box pipelines are variants derived from the standard multiplexed workflow (currently more stable).     
 
-### Prepare raw data
+### Prepare Raw Data and Interpretation File
 Copy raw data into `02_raw_data`, decompress, then run fastqc to view quality.    
 
 ```
@@ -32,10 +32,9 @@ fastqc -o 02_raw_data/fastqc_output 02_raw_data/*.fastq
 multiqc -o 02_raw_data/fastqc_output/ 02_raw_data/fastqc_output    
 ```
 
-### 00. Prepare the interpretation files
-Note: This must be done for each sequencing lane or chip separately. Use `00_archive/interp_example.txt` as a template.            
-
-**Importantly**, name the interpretation file with the input fastq name, but replace `R[1/2]_001.fastq` with `interp.txt`    
+The interpretation file must be made for each sequencing lane or chip separately.      
+Use `00_archive/interp_example.txt` as a template.            
+**Importantly**, name interp file with input fastq name, replacing `R[1/2]_001.fastq` with `interp.txt`    
 e.g. `Lib1_S1_L001_R1_001.fastq`, `Lib1_S1_L001_R2_001.fastq`, `Lib1_S1_L001_interp.txt`       
 
 
