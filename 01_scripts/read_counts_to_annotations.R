@@ -8,7 +8,8 @@
 #datatype <- "C3_COI"
 #datatype <- "SOG_16s"
 #datatype <- "C3_val"
-datatype <- "SOG_val"
+#datatype <- "SOG_val"
+datatype <- "SOG_COI"
 
 #### 0. Setup (no changes reqd) ####
 # Install Packages
@@ -16,7 +17,7 @@ datatype <- "SOG_val"
 library("RColorBrewer")
 
 # Set working directory depending on the dataset
-working.dir <- paste("~/Documents/03_eDNA/eDNA_metabarcoding_", datatype, sep = "")
+working.dir <- paste("/hdd/03_eDNA/eDNA_metabarcoding_", datatype, sep = "")
 setwd(working.dir)
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s_one_ended") # only req one end to assign
 
@@ -31,6 +32,8 @@ filenames.list[["C3_COI"]] <- setNames(object = c("NGS5-C01sal_S2_L001_ali_assi_
 filenames.list[["SOG_val"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
                                         , nm = c("count", "annot"))
 filenames.list[["SOG_16s"]] <- setNames(object = c("NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS-1-ex_sp.txt")
+                                        , nm = c("count", "annot"))
+filenames.list[["SOG_COI"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-775_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-775_clean_HS_hits-ex_sp.txt")
                                         , nm = c("count", "annot"))
 
 
@@ -132,6 +135,7 @@ species.remove[["C3_COI"]] <- c("NA", remove.from.all)
 species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae", remove.from.all)
 species.remove[["SOG_val"]] <- c("Homo sapiens", remove.from.all)
 species.remove[["SOG_16s"]] <- c("Homo sapiens", "Homininae", remove.from.all)
+species.remove[["SOG_COI"]] <- c("Homo sapiens", "Homininae", remove.from.all)
 species.remove <- species.remove[[datatype]] # Use datatype for removing species
 species.remove
 
@@ -277,7 +281,7 @@ if("sample.Mock" %in% colnames(counts.df) == T){
 
 ##### 4.2 Create Legend ####
 # Prepare legend size 
-legend.cex <- c(1, 1, 1, 1, 1) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val")
+legend.cex <- c(1, 1, 1, 1, 1, 1) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val", "SOG_COI")
 
 # Create dataframe with the taxon and the color
 color.index <- cbind(rownames(prop.df), this.palette)
