@@ -93,6 +93,11 @@ Because we did not use ngsfilter, we need to annotate each read accession with s
 (in brief: `obiannotate -S sample:$i 04_samples/*.fq > 04_samples/*_sannot.fq`)    
 (in brief: `cat *datatype_sannot.fq > 04_samples/datatype_merged_data_assi.fq`)    
 
+
+### Accounting for reads
+Run the script `01_scripts/check_merging.sh` then follow up with the Rscript `01_scripts/read_and_alignment_summary.R` to obtain summary statistics on how many reads were initially present in raw data and how many were merged.     
+
+
 Move on to [Part 2](#part-2-main-analysis).
 
 ### 1B.1.b. Use ngsfilter to Enter Pipeline with Single-End Reads With Unidentified Reads
