@@ -15,5 +15,3 @@ ls -1 $MERGED_FOLDER/*merged.fq | \
         obigrep -p 'mode!="joined"' $i"merged.fq" > $i"ali.fq"
     done
 
-# Move files to merged folder
-#mv $MERGED_FOLDER/*ali.fq $OUTPUT_FOLDER
