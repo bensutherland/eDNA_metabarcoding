@@ -22,15 +22,15 @@ head(my.data)
 my.data$percent.merged <- as.numeric(as.character(my.data$percent.merged))
 
 #### Summarize Raw Data ####
+sum(my.data$num.raw.reads)
 summary(my.data$num.raw)
 sd(my.data$num.raw.reads)
 
 #### Summarize Merged Data ####
+sum(my.data$num.merged.reads)
 summary(my.data$percent.merged)
 sd(my.data$percent.merged)
 
-#### Total Merged Reads ####
-sum(my.data$num.merged.reads)
 
 #### Percent Merged Reads ####
 sum(my.data$num.merged.reads) / sum(my.data$num.raw.reads) * 100
