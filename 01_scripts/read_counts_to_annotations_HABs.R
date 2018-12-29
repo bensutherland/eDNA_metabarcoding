@@ -4,12 +4,13 @@
 #rm(list=ls())
 
 # Choose dataset
-#datatype <- "C3_16s"
-#datatype <- "C3_COI"
-#datatype <- "SOG_16s"
-#datatype <- "C3_val"
-#datatype <- "SOG_val"
-datatype <- "SOG_COI"
+#datatype <- "HAB_16S"
+#datatype <- "HAB_18S"
+#datatype <- "HAB_18S_ngsfilter"
+#datatype <- "HAB_LSU"
+datatype <- "HAB_LSU_ngsfilter"
+#datatype <- "HAB_rbcL"
+
 
 #### 0. Setup (no changes reqd) ####
 # Install Packages
@@ -17,29 +18,40 @@ datatype <- "SOG_COI"
 library("RColorBrewer")
 
 # Set working directory depending on the dataset
-working.dir <- paste("/hdd/03_eDNA/eDNA_metabarcoding_", datatype, sep = "")
+working.dir <- paste("~/Documents/04_HAB/eDNA_metabarcoding_", datatype, sep = "")
 setwd(working.dir)
 #setwd("~/Documents/03_eDNA/eDNA_metabarcoding_C3_16s_one_ended") # only req one end to assign
 
 ## Create a filenames list that contains file names for each dataset (1st obitab output; 2nd MEGAN output)
 filenames.list <- list()
-filenames.list[["C3_val"]] <- setNames(object = c("NGSLib6_S1_L001_ali_assi_uniq_c10_55-75_clean_HS.txt", "NGSLib6_S1_L001_ali_assi_uniq_c10_55-75clean_HS_annot-ex_sp.txt")
+filenames.list[["HAB_16S"]] <- setNames(object = c("merged_data_assi_uniq_c10_50-775_clean_HS.txt", "16S_cleanHS_hits-ex.txt")
                                        , nm = c("count", "annot"))
-filenames.list[["C3_16s"]] <- setNames(object = c("NGS5-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS5-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS-ex_sp.txt")
+filenames.list[["HAB_18S"]] <- setNames(object = c("merged_data_assi_uniq_c10_50-775_clean_HS.txt", "18S_cleanHS_hits-ex.txt")
                                        , nm = c("count", "annot"))
-filenames.list[["C3_COI"]] <- setNames(object = c("NGS5-C01sal_S2_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS5-C01sal_S2_L001_ali_assi_uniq_c10_55-775_clean_HS_annot-ex_sp.txt")
+filenames.list[["HAB_LSU"]] <- setNames(object = c("merged_data_assi_uniq_c10_50-775_clean_HS.txt", "")
                                        , nm = c("count", "annot"))
-filenames.list[["SOG_val"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-75_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-75_clean_HS_annot-ex_sp.txt")
+filenames.list[["HAB_rbcL"]] <- setNames(object = c("merged_data_assi_uniq_c10_50-775_clean_HS.txt", "rbcL_cleanHS_hits_remote-ex.txt")
                                         , nm = c("count", "annot"))
-filenames.list[["SOG_16s"]] <- setNames(object = c("NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS.txt", "NGS4-16Schord_S1_L001_ali_assi_uniq_c10_55-775_clean_HS-1-ex_sp.txt")
-                                        , nm = c("count", "annot"))
-filenames.list[["SOG_COI"]] <- setNames(object = c("all_files_ali_assi_uniq_c10_55-775_clean_HS.txt", "all_files_ali_assi_uniq_c10_55-775_clean_HS_hits-ex_sp.txt")
-                                        , nm = c("count", "annot"))
+
+# Temporary ones
+# #DIAT
+# filenames.list[["HAB_18S_ngsfilter"]] <- setNames(object = c("diat_merged_data_assi_230_uniq_c2_55-300.txt", "diat_merged_data_assi_230_uniq_c2_55-300_hits-ex-sp.txt")
+#                                          , nm = c("count", "annot"))
+#DINO
+filenames.list[["HAB_18S_ngsfilter"]] <- setNames(object = c("dino_merged_data_assi_230_uniq_c2_55-300.txt", "dino_merged_data_assi_230_uniq_c2_55-300_hits-ex-sp.txt")
+                                                  , nm = c("count", "annot"))
+# For LSU_ngsfilter
+filenames.list[["HAB_LSU_ngsfilter"]] <- setNames(object = c("merged_data_assi_230_q15_10_uniq_c2_55-300.txt", "merged_data_assi_230_q15_10_uniq_c2_55-300_hits-ex_sp.txt")
+                                                  , nm = c("count", "annot"))
 
 
 #### 1.0 Import input data and merge #####
 paste("You are analyzing ", datatype, sep = "")
-counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = "")) 
+#counts <- read.delim2(paste("04_samples/", filenames.list[[datatype]][1], sep = ""))
+
+#temp for DINO/DIAT and LSU
+counts <- read.delim2(paste("04b_annotated_samples/", filenames.list[[datatype]][1], sep = "")) 
+
 annot <- read.delim2(paste("05_annotated/", filenames.list[[datatype]][2], sep = ""), header = F
                      , col.names = c("id","taxon"))
 # head(counts)
@@ -58,35 +70,35 @@ names(data)
 # Count up the reads coming out of MEGAN
 sum(data$count)
 
-##### 1.1 Limit to amplicon size #####
-# Investigate which species that you will remove with a particular amplicon size filter
-losing.species <- sort(unique(data[which(data$seq_length > 250), "taxon"]))
-losing.species
-keep.species <- sort(unique(data[which(data$seq_length <= 250), "taxon"]))
-keep.species
-
-# what species in the losing species are also present in the keep species?
-losing.species[losing.species %in% keep.species]
-
-# Calculate how many reads are lost when filtering by size here
-# data[which(data$seq_length > 250), ]
-remove.sum <- sum(data[which(data$seq_length > 250), "count"]) # removing this
-keep.sum <- sum(data[which(data$seq_length <= 250), "count"]) # keeping this
-remove.sum / (remove.sum + keep.sum) * 100 # percent being lost by this filter
-
-# Specific species
-target.species <- "Squalus acanthias"
-target.sp.removed.sum <- sum(data[data$taxon==target.species & data$seq_length > 250, "count"])
-target.sp.retained.sum <- sum(data[data$taxon==target.species & data$seq_length <= 250, "count"]) 
-total.sum <- sum(data[data$taxon==target.species, "count"])
-target.sp.removed.sum / total.sum * 100
-
-# Finally, limit to the rows with amplicons <= 250 bp
-data2 <- data[data$seq_length <= 250, ]
-sum(data2$count)
-sum(data$count)
-data <- data2
-str(data)
+# ##### 1.1 Limit to amplicon size #####
+# # Investigate which species that you will remove with a particular amplicon size filter
+# losing.species <- sort(unique(data[which(data$seq_length > 250), "taxon"]))
+# losing.species
+# keep.species <- sort(unique(data[which(data$seq_length <= 250), "taxon"]))
+# keep.species
+# 
+# # what species in the losing species are also present in the keep species?
+# losing.species[losing.species %in% keep.species]
+# 
+# # Calculate how many reads are lost when filtering by size here
+# # data[which(data$seq_length > 250), ]
+# remove.sum <- sum(data[which(data$seq_length > 250), "count"]) # removing this
+# keep.sum <- sum(data[which(data$seq_length <= 250), "count"]) # keeping this
+# remove.sum / (remove.sum + keep.sum) * 100 # percent being lost by this filter
+# 
+# # Specific species
+# target.species <- "Squalus acanthias"
+# target.sp.removed.sum <- sum(data[data$taxon==target.species & data$seq_length > 250, "count"])
+# target.sp.retained.sum <- sum(data[data$taxon==target.species & data$seq_length <= 250, "count"]) 
+# total.sum <- sum(data[data$taxon==target.species, "count"])
+# target.sp.removed.sum / total.sum * 100
+# 
+# # Finally, limit to the rows with amplicons <= 250 bp
+# data2 <- data[data$seq_length <= 250, ]
+# sum(data2$count)
+# sum(data$count)
+# data <- data2
+# str(data)
 
 ###### 1.2 Reduce columns within data ####
 data.df <- as.data.frame(data[, grepl( "sample\\.|taxon", names( data ))]) # keeps 'sample.' or 'taxon'
@@ -94,18 +106,22 @@ head(data.df)
 
 # View species that are present in dataset
 unique(data.df$taxon)
-
+length(unique(data.df$taxon))
 
 #### 1.3 Set location information ####
 locations <- list()
-locations[["locations.C3"]] <- c("IleQuarry", "Charlott", "LouisbNS", "TerraNova","RigolNL","RamahNL"
-                                 , "PondInlet" , "ErebusNu", "StRochNu", "BathhurNu", "PearceNT", "NomeAK"
-                                 , "HaidaGwaiiBC", "KutzeBC",  "ExtCont", "NTC")
-locations[["locations.SOG"]] <- colnames(data.df)[2:length(colnames(data.df))]
+locations[["HAB_16S"]] <- colnames(data.df)[2:length(colnames(data.df))]
+locations[["HAB_18S"]] <- colnames(data.df)[2:length(colnames(data.df))]
+locations[["HAB_LSU"]] <- colnames(data.df)[2:length(colnames(data.df))]
+locations[["HAB_rbcL"]] <- colnames(data.df)[2:length(colnames(data.df))]
 
-location.type <- paste("locations.", sub("_\\S*", "", datatype), sep = "")
+#temp
+locations[["HAB_18S_ngsfilter"]] <- colnames(data.df)[2:length(colnames(data.df))]
+locations[["HAB_LSU_ngsfilter"]] <- colnames(data.df)[2:length(colnames(data.df))]
 
-sample.locations <- locations[[location.type]]
+location.type <- paste("locations.", datatype, sep = "")
+ 
+sample.locations <- locations[[datatype]]
 sample.locations
 
 
@@ -122,27 +138,27 @@ options(scipen= 999999, digits=2)
 unannot.df <- rbind(all.hits, no.hits, percent.no.hits, not.assigned, percent.not.assigned)
 unannot.df <- round(x = unannot.df, digits = 2)
 
-colnames(unannot.df) <- sample.locations
+#colnames(unannot.df) <- sample.locations
 
 # write.csv(x = unannot.df, file = table.filename)
 
 
 # Set species to remove (e.g. humans)
-remove.from.all <- c("Not assigned", "No hits")
-species.remove <- list()
-species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens", remove.from.all)
-species.remove[["C3_COI"]] <- c("NA", remove.from.all)
-species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae", remove.from.all)
-species.remove[["SOG_val"]] <- c("Homo sapiens", remove.from.all)
-species.remove[["SOG_16s"]] <- c("Homo sapiens", "Homininae", remove.from.all)
-species.remove[["SOG_COI"]] <- c("Homo sapiens", "Homininae", remove.from.all)
-species.remove <- species.remove[[datatype]] # Use datatype for removing species
-species.remove
+#remove.from.all <- c("Not assigned", "No hits")
 
-# Remove species from data.df
-dim(data.df)
-data.df <- data.df[ ! data.df$taxon %in% species.remove, ]
-dim(data.df) # see how the number of taxa is reduced
+# species.remove <- list()
+# species.remove[["C3_16s"]] <- c("Homininae", "Homo sapiens", remove.from.all)
+# species.remove[["C3_COI"]] <- c("NA", remove.from.all)
+# species.remove[["C3_val"]] <- c("Homo sapiens", "Homininae", remove.from.all)
+# species.remove[["SOG_val"]] <- c("Homo sapiens", remove.from.all)
+# species.remove[["SOG_16s"]] <- c("Homo sapiens", "Homininae", remove.from.all)
+# species.remove <- species.remove[[datatype]] # Use datatype for removing species
+# species.remove
+
+# # Remove species from data.df
+# dim(data.df)
+# data.df <- data.df[ ! data.df$taxon %in% species.remove, ]
+# dim(data.df) # see how the number of taxa is reduced
 
 
 
@@ -269,19 +285,20 @@ if(length(index) > length(palette)){
 }
 
 
-#### 4.1 Drop Mock Column ####
-# This will remove the mock column for purposes of plotting as it overwhelms all of the data (due to too much sequencing for this)
-if("sample.Mock" %in% colnames(counts.df) == T){
-  counts.df <- counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]
-  prop.df <- prop.df[,-(which(colnames(prop.df)=="sample.Mock"))]
-  site.names <- site.names[-(which(site.names == "sample.Mock"))]
-  sample.reads <- sample.reads[-(which(names(sample.reads)=="sample.Mock"))]
-}
-
+# #### 4.1 Drop Mock Column ####
+# # This will remove the mock column for purposes of plotting as it overwhelms all of the data (due to too much sequencing for this)
+# if("sample.Mock" %in% colnames(counts.df) == T){
+#   counts.df <- counts.df[,-(which(colnames(counts.df)=="sample.Mock"))]
+#   prop.df <- prop.df[,-(which(colnames(prop.df)=="sample.Mock"))]
+#   site.names <- site.names[-(which(site.names == "sample.Mock"))]
+#   sample.reads <- sample.reads[-(which(names(sample.reads)=="sample.Mock"))]
+# }
+# 
 
 ##### 4.2 Create Legend ####
 # Prepare legend size 
-legend.cex <- c(1, 1, 1, 1, 1, 1) ; names(legend.cex) <- c("C3_16s","C3_COI", "SOG_16s", "C3_val", "SOG_val", "SOG_COI")
+#legend.cex <- c(1, 1, 1, 1, 1) ; names(legend.cex) <- c("HAB_16S", "HAB_18S", "HAB_LSU", "HAB_rbcL")
+legend.cex <- 1
 
 # Create dataframe with the taxon and the color
 color.index <- cbind(rownames(prop.df), this.palette)
@@ -317,24 +334,29 @@ par(mfrow=c(3,1), mar= c(2.5,4.5,2,1) + 0.2, mgp = c(3.75, 0.75, 0))
 # Plot count data
 position.info <- barplot(as.matrix(counts.df)
                          , col = this.palette, las = 2, xaxt = "n"
-                         , xlim = c(0, ncol(prop.df)+4)
+                         #, xlim = c(0, ncol(prop.df)+4)
                          , ylab = "Reads")
 # axis(side = 1, at = position.info, labels = sample.locations, las = 3, cex.axis = 0.9)
 
 # Plot proportion data
 position.info <- barplot(as.matrix(prop.df), col = this.palette
-        , xlim = c(0, ncol(prop.df)+4)
+        #, xlim = c(0, ncol(prop.df)+4)
         , las = 1
         , ylab = "Proportion (%)"
         , xaxt = "n")
+
+# site.names <- gsub(x = site.names, pattern = "sample.", replacement = "") ### TEMP CHANGE
+site.names <- gsub(x = site.names, pattern = "sample.", replacement = "")
+site.names <- gsub(x = site.names, pattern = "_L001_R1_assi_diat", replacement = "")
+site.names <- gsub(x = site.names, pattern = "_L001_R1_assi_dino", replacement = "")
 
 axis(side = 1, at = position.info, 
      labels = site.names, las = 3
      )
 
 # Add information about read counts per sample
-mtext(x = position.info, text = sample.reads
-      , side=3, at = position.info, cex = 0.7)
+# mtext(x = position.info, text = sample.reads
+#       , side=3, at = position.info, cex = 0.7)
 
 
 # Plot Legend, first make blank second plot
@@ -342,7 +364,9 @@ plot(1, type = "n", axes = F, xlab = "", ylab = "")
 
 # fix legend info to character text
 legend(x = "center", y = "center", legend = legend.info$taxon
-        , fill = as.character(legend.info$color), cex = legend.cex[datatype]
+        , fill = as.character(legend.info$color)
+       #, cex = legend.cex[datatype] #TEMP
+       , cex = 0.8
         , ncol = 4)
 
 dev.off()
