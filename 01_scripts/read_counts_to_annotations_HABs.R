@@ -1,7 +1,7 @@
 # Connect read counts to the annotations and plot
 # Input: output of obitab (read counts per sample) and MEGAN (taxonomy ID per amplicon)
 
-#rm(list=ls())
+# rm(list=ls())
 
 # Choose dataset
 #datatype <- "HAB_16S"
@@ -107,6 +107,9 @@ head(data.df)
 # View species that are present in dataset
 unique(data.df$taxon)
 length(unique(data.df$taxon))
+unique.taxa <- unique(data.df$taxon)
+# number unique taxa - (no hits, Not assigned) # i.e. subtract 2 from this number
+length(unique.taxa) - 2
 
 #### 1.3 Set location information ####
 locations <- list()
@@ -142,6 +145,17 @@ unannot.df <- round(x = unannot.df, digits = 2)
 
 # write.csv(x = unannot.df, file = table.filename)
 
+#### Reporting ####
+rownames(unannot.df)
+total.reads.in.megan <- sum(unannot.df["all.hits", ]) 
+total.reads.in.megan
+total.reads.not.assigned <- sum(unannot.df["not.assigned", ]) # number of reads that were given annotation by BLAST but not assigned by MEGAN
+total.reads.not.assigned
+total.reads.no.hits <- sum(unannot.df["no.hits", ]) # number of reads that were not annotated by BLAST
+total.reads.no.hits
+
+# Reads assigned
+total.reads.in.megan - total.reads.not.assigned - total.reads.no.hits
 
 # Set species to remove (e.g. humans)
 #remove.from.all <- c("Not assigned", "No hits")
