@@ -115,8 +115,8 @@ To identify identical amplicons, cut SE data down to a uniform size (230 bp) wit
 Move on to [Part 2](#part-2-main-analysis).
 
 ### Variant B. De-multiplexed multiple-amplicon (SE option only)
-SE data will enter the obitools pipeline by using ngsfilter with the primer sequence for the sample split into the first six basepairs as a fake 'barcode' and the last sequence of the primer as the primer sequence. This way you can, per sample, de-multiplex your data by amplicon type.    
-`01_scripts/02_ngsfilter.sh`    
+SE data will enter the obitools pipeline by using ngsfilter with the primer sequence for the sample split into the first six basepairs as a fake 'barcode' and the last sequence of the primer as the primer sequence. This way you can, per sample, de-multiplex your data by amplicon type. Note that this runs on the raw fastq data, so is a slight variant from the typical ngsfilter in other pipelines.     
+`01_scripts/02_ngsfilter_18S_for_separating_amplicons.sh`    
 
 Per sample, the data can be split into the two amplicon types (it is currently just named in the accession):   
 `01_scripts/00b_split_by_type.sh`    
