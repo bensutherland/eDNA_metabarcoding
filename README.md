@@ -19,7 +19,7 @@ This pipeline can handle the following datatypes. To find the appropriate pipeli
 * demultiplexed or multiplexed samples in fastq.gz format     
 * multiple amplicons within a single sample file     
 
-![](00_archive/eDNA_metabarcoding_workflow.png)
+![](00_archive/eDNA_metabarcoding_workflow_2018-12-30.png)
 **Figure 1.** eDNA_metabarcoding workflow, showing the different options for the first part of the pipeline to analyze the datatypes listed above. The grey box pipelines are variants derived from the standard multiplexed workflow, which is currently more stable.     
 
 ### Prepare Raw Data
