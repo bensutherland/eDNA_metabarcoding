@@ -7,6 +7,7 @@ Dependencies:
 `blastn` https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download     
 `cutadapt` http://cutadapt.readthedocs.io/en/stable/     
 `R` https://www.r-project.org/           
+`parallel` https://www.gnu.org/software/parallel/     
 
 To make obitools available everywhere, add both the obitools binary and the obitools `/export/bin` folder to your path.     
 
@@ -125,19 +126,22 @@ Do the rest separately for your two amplicon types.
 As above, use obiannotate to annotate your sequences.      
 `01_scripts/obiannotate_ident.sh`     
 
+After completing this step, one can use the following scripts to account for reads from each amplicon type:     
+`01_scripts/account_reads_annot.sh`     
+`02_scripts/account_reads_annot.R`      
+
 Move on to [Part 2](#part-2-main-analysis).
 
 ## Part 2. Main Analysis 
 ![](00_archive/eDNA_metabarcoding_workflow_2.png)
 
 ### 2.1. Retain Only Unique Reads
-Input is a single fastq file containing all samples for a specific amplicon, annotated with sample name.   
+Input is a single fastq file containing all samples for a specific amplicon, annotated in the fastq accession with sample name.   
 
-Use obiuniq to keep one record per unique amplicon in the fastq (outputs fasta).   
+Use obiuniq to keep one record per unique amplicon, retaining the count number (outputs fasta):   
 For paired-end data: `./01_scripts/03_retain_unique_PE.sh`      
 For single-end data: `./01_scripts/03_retain_unique_SE.sh`     
-(in brief: `obiuniq -m sample 04_samples/*assi.fq > 04_samples/*_uniq.fa`)        
-Note: one can also add other -m flags, such as `run`, or `pcr_rep`, etc., anything that you may want to summarize over using obitab later.    
+Note: one can also edit this script to add other -m flags, such as `run`, or `pcr_rep`, etc., anything that you may want to summarize over using obitab later.    
 
 Audit: sum up the count value to make sure all reads are accounted for:    
 `grep -E '^>' 04_samples/your_file_ali_assi_uniq.fa | awk -F'\ count=' '{ print $2 }' - | awk -F';' '{ print $1 }' | paste -sd+ - | bc`
@@ -154,18 +158,10 @@ PE data does full filtering as above:
 SE data filters only on size and count:    
 `./01_scripts/04_denoise_and_remove_err_SE.sh` (edit LMIN, LMAX, MIN_READS)    
     
-In brief, this does the following: 
-```
-obigrep --lmin <min> --lmax <max> -p 'count>= <min.reads>' input.fa > output.fa     
-obiclean -s merged sample -r 0.05 output_obigrep.fa > output_obiclean.fa   
-obigrep -a 'obiclean_status:s|h' output_obiclean.fa > output_all.fa
-```
 
 Audit: determine how many reads make it through each filtering steps:    
 Reads in the fasta after size selecting/count filter:   
 `grep -E '^>' 04_samples/*_ali_assi_uniq_c10_55-75.fa | awk -F"\ count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`     
-Reads in the fasta after only keeping head and singletons:      
-`grep -E '^>' all_files_ali_assi_uniq_c10_55-75_clean_HS.fa | awk -F"; count=" '{ print $2 }' - | awk -F";" '{ print $1 }' - | paste -sd+ - | bc`    
 
 Note: can also test other lengths by streaming into grep: 
 `obigrep --lmin 55 --lmax 75 -p 'count>=5' 04_samples/yourfile.fa | grep -cE '^>' - `
@@ -173,13 +169,12 @@ Note: can also test other lengths by streaming into grep:
 ### 2.3. Export data     
 Use obitab to output a tab-delimited text file that will be used as an input to the R Script below.   
 `./01_scripts/05_obitab_export.sh`    
-(In brief: `obitab --output-seq 04_samples/*clean_HS.fa > 04_samples/*.txt`)   
 
 ### 2.4. Assign each sequence to a taxon
 Use a blastn to align the H and S fasta file against nt (NCBI remote).   
 `blastn -db nt -query 04_samples/your_cleaned_HS.fa -out 05_annotated/your_lib_output.txt -remote -num_descriptions 10 -num_alignments 10`    
 
-Or if running a massive blast, use parallel:   
+Or if running a large set of queries, use parallel:   
 `SEQUENCE_FILE="04_samples/your_filtered_fasta.fa" ; OUTPUT="05_annotated/your_filtered_fasta_hits.txt" ; cat $SEQUENCE_FILE | parallel -j 12 -k --block 1k --recstart '>' --pipe 'blastn -db /home/ben/blastplus_databases/nt -query - -num_descriptions 10 -num_alignments 10 ' > $OUTPUT`    
 
 Track output:    
@@ -207,8 +202,13 @@ This will use the R script `read_counts_to_annotations.R`, run interactively.
 Necessary inputs:   
 Amplicon annotation output from MEGAN, and amplicon read count from `obitab`   
 
+This script is currently highly customized to the two projects using this analysis. To change it to fit your data, you would have to provide the appropriate filenames, datatypes, locations of samples. This script would be more considered to be a template to modify for the user for other studies.    
+
 In brief, this will merge these two inputs, attach locations, aggregate different amplicons with same annotation, calculate proportions, save out proportion plots and count/proportion tables.    
 
 Within here, one can apply a low expression filter to remove any counts less than 10.   
+Output will be saved to `06_output_figures` (for figures) and `05_annotated` (for counts/proportions).    
 
-(note: currently working on improving this script to be more universal. See a larger version on `read_counts_to_annotations_HABs.R`)    
+There is also a second script that is more customized, specifically tailored to the HABs project to deal with the Variant pipeline types `01_scripts/read_counts_to_annotations_HABs.R`. This script is not currently for broader use, and is only used for this project.       
+
+These Rscripts may be continually developed if there is interest in increasing the generality of this pipeline. Please contact the author for more information or comments.     
