@@ -1,27 +1,27 @@
 # eDNA_metabarcoding
-Note: This repo is mainly for the developers purpose, no guarantees of functionality or usefulness.    
+This repo has been developed at the Molecular Genetics Laboratory of Pacific Biological Station (Fisheries and Oceans Canada) as part of the working group of Kristi Miller. This pipeline was developed for the purposes of analyzing eDNA and other metabarcoding datasets for the projects within this lab, and carries no guarantees of functionality or usefulness for other applications.         
 
 Dependencies:    
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
-`MEGAN 6 (Community Edition)` https://ab.inf.uni-tuebingen.de/software/megan6     
+`MEGAN 6 (CE)` https://ab.inf.uni-tuebingen.de/software/megan6     
 `blastn` https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download     
 `cutadapt` http://cutadapt.readthedocs.io/en/stable/     
-`R`     
+`R` https://www.r-project.org/           
 
-To make obitools available everywhere, add the obitools binary and the obitools `/export/bin` folder to your $PATH     
+To make obitools available everywhere, add both the obitools binary and the obitools `/export/bin` folder to your path.     
 
-Launch OBITools    
+Before starting, launch OBITools from the terminal    
 `obitools`    
 
-This pipeline can handle the following, and to find the appropriate pipeline, see Figure 1:     
+This pipeline can handle the following datatypes. To find the appropriate pipeline, see Figure 1:     
 * single-end (SE) or paired-end (PE) data      
-* demultiplexed or multiplexed data     
+* demultiplexed or multiplexed samples in fastq.gz format     
 * multiple amplicons within a single sample file     
 
 ![](00_archive/eDNA_metabarcoding_workflow.png)
-**Figure 1.** eDNA_metabarcoding workflow, showing the front end different options for either single-end (SE) or paired-end (PE) data, prior to the main analysis section. The grey box pipelines are variants derived from the standard multiplexed workflow (currently more stable).     
+**Figure 1.** eDNA_metabarcoding workflow, showing the different options for the first part of the pipeline to analyze the datatypes listed above. The grey box pipelines are variants derived from the standard multiplexed workflow, which is currently more stable.     
 
-### Prepare Raw Data and Interpretation File
+### Prepare Raw Data
 Copy raw data into `02_raw_data`, decompress, then run fastqc to view quality.    
 
 ```
@@ -32,39 +32,48 @@ fastqc -o 02_raw_data/fastqc_output 02_raw_data/*.fastq
 multiqc -o 02_raw_data/fastqc_output/ 02_raw_data/fastqc_output    
 ```
 
-The interpretation file must be made for each sequencing lane or chip separately.      
-Use `00_archive/interp_example.txt` as a template.            
-**Importantly**, name interp file with input fastq name, replacing `R[1/2]_001.fastq` with `interp.txt`    
+If you want to account for the number of reads in the input fastq files, producing some basic statistics on the reads (e.g. mean, sd, etc.), use the following:      
+`./01_scripts/account_reads.sh`      
+...followed by the Rscript run interactively:     
+`./01_scripts/account_reads.R`      
+For accounting reads when planning to do read merging or when having multiple amplicons in each fastq file, wait to do read accounting until later in the pipeline.    
+
+### Prepare Interpretation File
+The interpretation (interp) file must be made for each sequencing lane or chip separately.      
+Use `00_archive/interp_example.txt` as a template to prepare the interp.            
+**Importantly**, name interp file with input fastq name, replacing the section `R[1/2]_001.fastq` with `interp.txt`    
 e.g. `Lib1_S1_L001_R1_001.fastq`, `Lib1_S1_L001_R2_001.fastq`, `Lib1_S1_L001_interp.txt`       
 
 
-## Part 1A. Enter Pipeline - Multiplexed Data
-### 1A.1.a. Merge Paired-End Reads 
-Paired-end data will undergo read merging first, run the following script:    
+## Part 1A. Enter Pipeline - Multiplexed Samples
+This section treats fastq files that contain more than one sample.     
+
+### 1A.1.a. PE Data: Merge Reads 
+Paired-end data will undergo read merging first using illuminapairedend with a minimum score of 40. Output will be per file in the `03_merged` folder.    
 `01_scripts/01a_read_merging.sh`     
-(in brief: `illuminapairedend --score-min=40 -r 02_raw_data/*R2.fq 02_raw_data/*R1.fq > 03_merged/*merged.fq`)      
-Retain only the merged (aligned) reads:     
+
+Retain only the merged (also termed 'aligned') reads using obigrep:     
 `01_scripts/01b_retain_aligned.sh`     
-(in brief: `obigrep -p 'mode!="joined"' 03_merged/*merged.fq > 03_merged/*ali.fq`)   
 
-Audit: how many reads remain after keeping only merged?     
-`grep -cE '^\+$' 03_merged/*ali.fq`
+#### Post-Merge Read Accounting       
+The following script will account reads and merges:      
+`01_scripts/check_merging.sh`      
+...followed by Rscript interactively:      
+`01_scripts/read_and_alignment_summary.R`      
 
-
-### 1A.1.b. Mimic PE Step For SE Samples
-Single-end data, to catch up w/ paired-end, run the following command:   
+### 1A.1.b. SE Data: Rename Files
+If you have SE data, this is necessary to match the file names from PE data for the pipeline, run for each fq file:       
 `cp -l 02_raw_data/your_file_R1_001.fastq 03_merged/your_file_ali.fq`    
 
 
 ### 1A.2. Separate Individuals   
-Use ngsfilter with the interp file(s) to demultiplex samples out of the `*.ali.fq` file(s).     
+Use ngsfilter with the interp file(s) to demultiplex samples out of the `*.ali.fq` file(s). Results will be separated by sample and placed in `04_samples`.     
 `./01_scripts/02_ngsfilter.sh`    
-(in brief: `ngsfilter -t 00_archive/*_interp.txt -u unidenfied.fq 03_merged/*ali.fq > 04_samples/*_ali_assi.fq`)    
 
 Audit: how many reads were assigned to a sample?   
 `for i in $(ls 04_samples/*_ali_assi.fq) ; do echo $i ; grep -cE '^\+$' $i ;  done`   
 
-Each output file now should be annotated with a sample ID in the read accession header, and if so, one can concatenate all files together now, as follows:  
+Since all files should not be annotated with a sample ID in the fasta record header,  and so one can concatenate all files together:  
 ```
 mkdir 04_samples/sep_indiv
 mv 04_samples/*.fq 04_samples/sep_indiv
@@ -73,54 +82,42 @@ cat 04_samples/sep_indiv/*_ali_assi.fq > 04_samples/all_files_ali_assi.fq
 
 Move on to [Part 2](#part-2-main-analysis).
 
-## Part 1B. Enter Pipeline - De-Multiplexed Data
-This section is the preparation of input data section if your data comes de-multiplexed.    
-Depending on the data type (see Figure 1), the steps taken here will vary. See Variant A and Variant B.        
+## Part 1B. Enter Pipeline - De-Multiplexed Data Variants
+This section treats fastq files that are already de-multiplexed.   
+Depending on the data type (see Figure 1), the steps taken here will vary (also see Variant A and Variant B).        
 
 ### Variant A. De-multiplexed single-amplicon (SE and PE)
 ### 1B.0. Cutadapt
-As the barcodes are not used to de-multiplex in this case, the primer sequence still must be removed:     
+Barcodes are not used to de-multiplex here, but the primer sequence still must be removed. Set the primer variables in the following script and run it to produce your fastq files without the primer renamed as 'yourfile_noprime.fastq'.     
 `01_scripts/00_cutadapt_primer_seq.sh`    
-(in brief: `cutadapt -g adapt1 -G adapt2 -o 02_raw_data/*R1_001_noprime.fastq -p 02_raw_data/*R2_001_noprime.fastq 02_raw_data/*R1_001.fastq.gz 02_raw_data/*R1_001_fastq.gz`)       
 
-### 1B.1.a. Merge Paired-End Reads
-See Part 1A, 01a (merge Paired-End Reads for details, but the following is for those without primers:   
+### 1B.1.a. PE Reads: Merge
+Similar to above, merge PE reads on the primer-removed fastq files:        
 `01_scripts/01a_read_merging_noprime.sh`    
 `01_scripts/01b_retain_aligned.sh`    
 
-Because we did not use ngsfilter, we need to annotate each read accession with sample IDs, then the read files can be combined into a single file.    
+As ngsfilter was not used here, before combining multiple samples together, we need to annotate each read with a sample ID. This is conducted with the following script that will use obiannotate to name records, then combine all into `04_samples/*merged_data_assi.fq`        
 `01_scripts/obiannotate_ident.sh`      
-(in brief: `obiannotate -S sample:$i 04_samples/*.fq > 04_samples/*_sannot.fq`)    
-(in brief: `cat *datatype_sannot.fq > 04_samples/datatype_merged_data_assi.fq`)    
 
+Now move on to [Part 2](#part-2-main-analysis).
 
-### Accounting for reads
-Run the script `01_scripts/check_merging.sh` then follow up with the Rscript `01_scripts/read_and_alignment_summary.R` to obtain summary statistics on how many reads were initially present in raw data and how many were merged.     
-
-
-Move on to [Part 2](#part-2-main-analysis).
-
-### 1B.1.b. Use ngsfilter to Enter Pipeline with Single-End Reads With Unidentified Reads
-Single-end data, enter the obitools pipeline via a failed run of ngsfilter and take all of the 'unidentied reads' per sample as your sample's reads:    
+### 1B.1.b. SE Reads: Prepare Data for Obitools
+To get into the pipeline, with reads formatted for obitools, use a pass through ngsfilter designed to fail all reads, then take all unidentified reads for your sample and move forward.     
 `01_scripts/02_ngsfilter_SE_exp_unident.sh`    
-(in brief: `ngsfilter -t $interp -u 04_samples/*_unidentified.fq 02_raw_data/*_001.fastq > 04_samples/*_assi.fq`)
-As noted, all the unidentified files will have full data in them, and the assigned are empty.      
+All the data should be in 'unidentified' files per sample, and all 'assigned' files should be empty here.    
 
-As above, we need to annotate each read accession with a sample ID (no ngsfilter success), then combine all files into one:    
+Each read will then be annotated with a sample ID, then all files combined together:    
 `01_scripts/obiannotate_unident.sh`
-(in brief: `obiannotate -S sample:$i 04_samples/*L001_Rq_unidentified.fq > 04_samples/*_sannot.fq`)
-(in brief: `cat 04_samples/*_sannot.fq > 04_samples/merged_data_assi.fq`)
 
-To improve identification of identical amplicons, cut the SE data to a uniform size using cutadapt:     
+To identify identical amplicons, cut SE data down to a uniform size (230 bp) with cutadapt:      
 `cutadapt --length 230 -o 04b_annotated_samples/merged_data_assi_230.fq 04b_annotated_samples/merged_data_assi.fq`      
 Move on to [Part 2](#part-2-main-analysis).
 
 ### Variant B. De-multiplexed multiple-amplicon (SE option only)
-Single-end data, enter the obitools pipeline by using ngsfilter with the primer sequence split into the first six basepairs as a fake 'barcode' and the last sequence of the primer as the primer sequence. This way you can, per sample, de-multiplex your data by amplicon type.    
+SE data will enter the obitools pipeline by using ngsfilter with the primer sequence for the sample split into the first six basepairs as a fake 'barcode' and the last sequence of the primer as the primer sequence. This way you can, per sample, de-multiplex your data by amplicon type.    
 `01_scripts/02_ngsfilter.sh`    
-(as described above)
 
-Then per sample, the data can be split into the two amplicon types (it is currently just named in the accession):   
+Per sample, the data can be split into the two amplicon types (it is currently just named in the accession):   
 `01_scripts/00b_split_by_type.sh`    
 Note here that this script will need to be edited for your use. Currently uses grep to take the following three lines after the identifier of interest.    
 
