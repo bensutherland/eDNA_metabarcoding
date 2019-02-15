@@ -2,21 +2,23 @@
 
 #rm(list=ls())
 
+# Plotting parameters
 par(mfrow=c(2,3), mar= c(4,3,3,1) + 0.2, mgp = c(2,0.75,0))
 options(scipen = 9999999)
 
 # Choose dataset
-datatypes <- c("C3_val", "C3_COI", "C3_16s",  "SOG_val", "SOG_16s")
+datatypes <- c("C3_val", "C3_COI", "C3_16s",  "SOG_val", "SOG_COI", "SOG_16s")
 
 # Collect information of uniq taxa and total reads per site
 # Also plots uniq taxa by read count
 
-# Set Nulls
+# Set nulls
 taxa.read.counts.list <- list(); uniq.taxa <- NULL; reads.per.site <- NULL
 
 for(d in datatypes){
+  
   # Set working directory
-  working.dir <- paste("~/Documents/03_eDNA/eDNA_metabarcoding_", d, sep = "")
+  working.dir <- paste("/hdd/03_eDNA/eDNA_metabarcoding_", d, sep = "")
   setwd(working.dir)
   
   # Import filename for the 'x count' filtered count file
