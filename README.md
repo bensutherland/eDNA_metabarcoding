@@ -1,5 +1,5 @@
 # eDNA_metabarcoding
-This repo has been developed at the Molecular Genetics Laboratory of Pacific Biological Station (Fisheries and Oceans Canada) as part of the working group of Kristi Miller. This pipeline was developed for the purposes of analyzing eDNA and other metabarcoding datasets for the projects within this lab, and carries no guarantees of functionality or usefulness for other applications.         
+This repo has been developed at the Molecular Genetics Laboratory of Pacific Biological Station (Fisheries and Oceans Canada). This pipeline was developed for the purposes of analyzing eDNA and other metabarcoding datasets for the projects within this lab, and carries **no guarantees of functionality or usefulness for broader/other applications**.         
 
 Dependencies:    
 `OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
