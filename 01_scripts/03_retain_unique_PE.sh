@@ -2,7 +2,6 @@
 # Keep only unique reads per sample
 # Currently applied using -m <TAG NAME> where TAG NAME is 'sample'
 
-
 # Global variables
 INTERP_FOLDER="00_archive"
 SAMPLE_FOLDER="04_samples"

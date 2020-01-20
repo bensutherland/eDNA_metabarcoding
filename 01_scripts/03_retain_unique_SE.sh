@@ -2,13 +2,12 @@
 # Keep only unique reads per sample
 # Currently applied using -m <TAG NAME> where TAG NAME is 'sample'
 
-
 # Global variables
 INTERP_FOLDER="00_archive"
-SAMPLE_FOLDER="04b_annotated_samples"
+SAMPLE_FOLDER="04_samples"
 
 # Run on all the assigned fastq files 
-ls -1 $SAMPLE_FOLDER/*assi_230*.fq | \
+ls -1 $SAMPLE_FOLDER/*assi.fq | \
     perl -pe 's/\.fq//' | \
     sort -u | \
     while read i

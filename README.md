@@ -28,16 +28,20 @@ Copy raw data into `02_raw_data`, decompress, then run fastqc to view quality.
 ```
 cd 02_raw_data     
 for i in $(ls *.fastq.gz ) ; do gunzip -c $i > ${i%.gz} ; done
+cd ..
 mkdir 02_raw_data/fastqc_output    
 fastqc -o 02_raw_data/fastqc_output 02_raw_data/*.fastq    
 multiqc -o 02_raw_data/fastqc_output/ 02_raw_data/fastqc_output    
 ```
 
+#### Optional: needs update
 If you want to account for the number of reads in the input fastq files, producing some basic statistics on the reads (e.g. mean, sd, etc.), use the following:      
 `./01_scripts/account_reads.sh`      
 ...followed by the Rscript run interactively:     
 `./01_scripts/account_reads.R`      
 For accounting reads when planning to do read merging or when having multiple amplicons in each fastq file, wait to do read accounting until later in the pipeline.    
+#### end Optional: needs update
+
 
 ### Prepare Interpretation File
 The interpretation (interp) file must be made for each sequencing lane or chip separately.      
@@ -74,11 +78,11 @@ Use ngsfilter with the interp file(s) to demultiplex samples out of the `*.ali.f
 Audit: how many reads were assigned to a sample?   
 `for i in $(ls 04_samples/*_ali_assi.fq) ; do echo $i ; grep -cE '^\+$' $i ;  done`   
 
-Since all files should not be annotated with a sample ID in the fasta record header,  and so one can concatenate all files together:  
+Since all files should now be annotated with a sample ID in the fasta record header, one can concatenate all files together:  
 ```
-mkdir 04_samples/sep_indiv
-mv 04_samples/*.fq 04_samples/sep_indiv
-cat 04_samples/sep_indiv/*_ali_assi.fq > 04_samples/all_files_ali_assi.fq
+mkdir 04_samples/sep_samples
+mv 04_samples/*.fq 04_samples/sep_samples
+cat 04_samples/sep_samples/*_ali_assi.fq > 04_samples/all_files_ali_assi.fq
 ```
 
 Move on to [Part 2](#part-2-main-analysis).
