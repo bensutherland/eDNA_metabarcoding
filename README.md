@@ -101,6 +101,9 @@ Similar to above, merge PE reads on the primer-removed fastq files:
 `01_scripts/01a_read_merging_noprime.sh`    
 `01_scripts/01b_retain_aligned.sh`    
 
+Now move all of your merged, individual 'ali.fq' into the appropriate folder:       
+`cp -l 03_merged/*ali.fq 04_samples/`     
+
 As ngsfilter was not used here, before combining multiple samples together, we need to annotate each read with a sample ID. This is conducted with the following script that will use obiannotate to name records, then combine all into `04_samples/*merged_data_assi.fq`        
 `01_scripts/obiannotate_ident.sh`      
 
