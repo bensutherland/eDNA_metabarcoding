@@ -1,13 +1,17 @@
 # eDNA_metabarcoding
 This repo has been developed at the Molecular Genetics Laboratory of Pacific Biological Station (Fisheries and Oceans Canada). This pipeline was developed for the purposes of analyzing eDNA and other metabarcoding datasets for the projects within this lab, and carries **no guarantees of functionality or usefulness for broader/other applications**.         
 
+**Please note: this pipeline is not currently being actively maintained**
+
 Dependencies:    
-`OBITools` http://metabarcoding.org/obitools/doc/welcome.html       
+`OBITools` (v.1) http://metabarcoding.org/obitools/doc/welcome.html       
 `MEGAN 6 (CE)` https://ab.inf.uni-tuebingen.de/software/megan6     
 `blastn` https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download     
 `cutadapt` http://cutadapt.readthedocs.io/en/stable/     
 `R` https://www.r-project.org/           
 `parallel` https://www.gnu.org/software/parallel/     
+
+**Please note: this pipeline was designed for OBITools 1, and not for any future iterations of OBITools.**
 
 To make obitools available everywhere, add both the obitools binary and the obitools `/export/bin` folder to your path.     
 
